@@ -140,6 +140,76 @@
   flex: 0 0 auto;
 }
 
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userLogoutButton {
+  padding: 8px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.userLogoutButton:hover {
+  background: rgb(var(--brand-rgb) / 0.1);
+  color: var(--text-primary);
+}
+
+.navItemWithDropdown {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  position: relative;
+}
+
+.navItemDropdownTrigger {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(var(--brand-rgb) / 0.12);
+  color: var(--brand-strong);
+  font-size: 0.7rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.navItemDropdownTrigger:hover {
+  background: rgb(var(--brand-rgb) / 0.2);
+}
+
+.navItemDropdown {
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 0;
+  border-radius: 12px;
+  background: rgb(var(--panel-rgb) / 0.98);
+  box-shadow: 0 8px 24px rgba(44, 63, 70, 0.15);
+  border: 1px solid rgb(var(--brand-rgb) / 0.12);
+}
+
+.navItemDropdownLink {
+  display: block;
+  padding: 10px 14px 10px 36px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navItemDropdownLink:hover {
+  background: rgb(var(--brand-rgb) / 0.1);
+  color: var(--text-primary);
+}
+
 .sidebarFooter {
   margin-top: auto;
 }
@@ -217,6 +287,27 @@
 .deleteIcon {
   width: 15px;
   height: 15px;
+}
+
+.removeFromFavoritesButton {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(var(--warning-rgb) / 0.18);
+  color: var(--warning);
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.removeFromFavoritesButton:hover {
+  background: rgb(var(--warning-rgb) / 0.28);
 }
 
 .primaryButton:disabled {

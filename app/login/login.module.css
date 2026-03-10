@@ -1,0 +1,112 @@
+.wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgb(var(--panel-rgb) / 0.35), rgb(var(--brand-rgb) / 0.25), rgb(var(--brand-strong-rgb) / 0.4)),
+    url("/ocean-waves-bg.png");
+  background-attachment: fixed;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  border-radius: 24px;
+  background: rgb(var(--panel-rgb) / 0.95);
+  box-shadow: 0 24px 60px rgba(30, 58, 90, 0.22);
+  border: 1px solid rgb(var(--brand-rgb) / 0.2);
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.brandIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #3c535c, #6c8792);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.error {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgb(var(--danger-rgb) / 0.12);
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.input {
+  padding: 14px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgb(var(--brand-rgb) / 0.2);
+}
+
+.submit {
+  margin-top: 8px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit:hover:not(:disabled) {
+  opacity: 0.95;
+}
+
+.submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

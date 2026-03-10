@@ -7,6 +7,8 @@ import { workspaceTitle } from '@/lib/constants/workspace';
 import { defaultBoardId } from '@/lib/mock-data/boards';
 import { createBoardFromTemplate, deleteBoard, loadStoredBoards, mergeBoards, saveBoard, BOARD_STORAGE_EVENT } from '@/lib/utils/board-storage';
 import { getBoards } from '@/lib/utils/board';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 import styles from './app-shell.module.css';
 
 type AppShellProps = {
@@ -36,6 +38,22 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
   const [newBoardName, setNewBoardName] = useState('');
   const [isMotivationOpen, setIsMotivationOpen] = useState(false);
   const [motivationQuote, setMotivationQuote] = useState(motivationQuotes[0]);
+  const [user, setUser] = useState<User | null>(null);
+  const [openDropdownBoardId, setOpenDropdownBoardId] = useState<string | null>(null);
+  const [isFavoritesEditMode, setIsFavoritesEditMode] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) {
+      setUser(null);
+      return;
+    }
+    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     function syncBoards() {
@@ -90,6 +108,23 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
     }
   }
 
+  function handleRemoveFromFavorites(boardId: string) {
+    const board = boards.find((b) => b.id === boardId);
+    if (!board) return;
+    setOpenDropdownBoardId((id) => (id === boardId ? null : id));
+    saveBoard({ ...board, favorites: false });
+    setBoards((current) =>
+      current.map((b) => (b.id === boardId ? { ...b, favorites: false } : b))
+    );
+  }
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  }
+
   function handleGenerateMotivation() {
     if (isMotivationOpen) {
       setIsMotivationOpen(false);
@@ -120,22 +155,85 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
         </div>
 
         <div className={styles.sidebarSection}>
-          <p className={styles.sectionLabel}>Favorites</p>
+          <div className={styles.sectionHeader}>
+            <p className={styles.sectionLabel}>Favorites</p>
+            <button
+              type="button"
+              className={styles.sectionActionButton}
+              onClick={() => setIsFavoritesEditMode((current) => !current)}
+            >
+              {isFavoritesEditMode ? 'Done' : 'Edit'}
+            </button>
+          </div>
           <Link className={styles.navItem} href="/">
             Overview
           </Link>
           {boards
             .filter((board) => board.favorites)
-            .map((board) => (
-              <Link
-                key={board.id}
-                href={`/boards/${board.id}`}
-                className={`${styles.navItem} ${activeBoardId === board.id ? styles.navItemActive : ''}`}
-              >
-                <span className={styles.navDot} />
-                {board.name}
-              </Link>
-            ))}
+            .map((board) =>
+              isFavoritesEditMode ? (
+                <div
+                  key={board.id}
+                  className={`${styles.navItem} ${styles.navItemEditable} ${
+                    activeBoardId === board.id ? styles.navItemActive : ''
+                  }`}
+                >
+                  <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                    <span className={styles.navDot} />
+                    <span className={styles.navItemLabel}>{board.name}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    className={styles.removeFromFavoritesButton}
+                    onClick={() => handleRemoveFromFavorites(board.id)}
+                    aria-label={`Remove ${board.name} from Favorites`}
+                    title="Remove from Favorites"
+                  >
+                    −
+                  </button>
+                </div>
+              ) : (
+                <div
+                  key={board.id}
+                  className={`${styles.navItem} ${styles.navItemWithDropdown} ${
+                    activeBoardId === board.id ? styles.navItemActive : ''
+                  }`}
+                >
+                  <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                    <span className={styles.navDot} />
+                    <span className={styles.navItemLabel}>{board.name}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    className={styles.navItemDropdownTrigger}
+                    onClick={() => setOpenDropdownBoardId((id) => (id === board.id ? null : board.id))}
+                    aria-expanded={openDropdownBoardId === board.id}
+                    aria-haspopup="true"
+                    aria-label={`Toggle menu for ${board.name}`}
+                  >
+                    {openDropdownBoardId === board.id ? '▲' : '▼'}
+                  </button>
+                  {openDropdownBoardId === board.id ? (
+                    <div className={styles.navItemDropdown}>
+                      <Link
+                        className={styles.navItemDropdownLink}
+                        href={`/boards/${board.id}#manage-team-roster`}
+                        onClick={() => setOpenDropdownBoardId(null)}
+                      >
+                        Team roster
+                      </Link>
+                      <Link
+                        className={styles.navItemDropdownLink}
+                        href={`/boards/${board.id}#list-of-tasks`}
+                        onClick={() => setOpenDropdownBoardId(null)}
+                      >
+                        List of tasks
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+              )
+            )}
         </div>
 
         <div className={styles.sidebarSection}>
@@ -176,14 +274,45 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
                 </button>
               </div>
             ) : (
-              <Link
+              <div
                 key={board.id}
-                href={`/boards/${board.id}`}
-                className={`${styles.navItem} ${activeBoardId === board.id ? styles.navItemActive : ''}`}
+                className={`${styles.navItem} ${styles.navItemWithDropdown} ${
+                  activeBoardId === board.id ? styles.navItemActive : ''
+                }`}
               >
-                <span className={styles.workspacePill}>{board.workspace.slice(0, 1)}</span>
-                {board.name}
-              </Link>
+                <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                  <span className={styles.workspacePill}>{board.workspace.slice(0, 1)}</span>
+                  <span className={styles.navItemLabel}>{board.name}</span>
+                </Link>
+                <button
+                  type="button"
+                  className={styles.navItemDropdownTrigger}
+                  onClick={() => setOpenDropdownBoardId((id) => (id === board.id ? null : board.id))}
+                  aria-expanded={openDropdownBoardId === board.id}
+                  aria-haspopup="true"
+                  aria-label={`Toggle menu for ${board.name}`}
+                >
+                  {openDropdownBoardId === board.id ? '▲' : '▼'}
+                </button>
+                {openDropdownBoardId === board.id ? (
+                  <div className={styles.navItemDropdown}>
+                    <Link
+                      className={styles.navItemDropdownLink}
+                      href={`/boards/${board.id}#manage-team-roster`}
+                      onClick={() => setOpenDropdownBoardId(null)}
+                    >
+                      Team roster
+                    </Link>
+                    <Link
+                      className={styles.navItemDropdownLink}
+                      href={`/boards/${board.id}#list-of-tasks`}
+                      onClick={() => setOpenDropdownBoardId(null)}
+                    >
+                      List of tasks
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
             ),
           )}
         </div>
@@ -216,7 +345,23 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
             <button className={styles.primaryButton} type="button" onClick={openCreateBoardModal}>
               New project
             </button>
-            <div className={styles.userBubble}>HN</div>
+            {user ? (
+              <div className={styles.userMenu}>
+                <span className={styles.userBubble} title={user.email ?? undefined}>
+                  {(user.email ?? '?').slice(0, 2).toUpperCase()}
+                </span>
+                <button
+                  type="button"
+                  className={styles.userLogoutButton}
+                  onClick={handleSignOut}
+                  aria-label="Sign out"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <div className={styles.userBubble}>--</div>
+            )}
           </div>
         </header>
 
@@ -286,18 +431,15 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
         >
           <span className={styles.motivationAvatar} aria-hidden="true">
             <svg viewBox="0 0 96 96" className={styles.motivationAvatarArt}>
-              <circle cx="48" cy="49" r="27" fill="#f1c98e" />
-              <path d="M26 38c4-17 40-17 44 0-6 4-16 6-22 6s-16-2-22-6Z" fill="#d8bb6f" />
-              <path d="M16 34c0-8 16-16 32-16s32 8 32 16-16 10-32 10S16 42 16 34Z" fill="#b49652" />
-              <path d="M18 33c0-10 13-21 30-21s30 11 30 21c0 3-2 6-5 8-4-5-14-8-25-8s-21 3-25 8c-3-2-5-5-5-8Z" fill="#d6b463" />
-              <path d="M27 25c6-5 14-8 21-8 8 0 15 2 21 7" stroke="#d83f4c" strokeWidth="4" strokeLinecap="round" />
-              <path d="M30 62c5 7 13 11 18 11s13-4 18-11l8 21H22l8-21Z" fill="#cf3d47" />
-              <path d="M32 48c0 3 2 5 4 5s4-2 4-5" stroke="#27373d" strokeWidth="3" strokeLinecap="round" />
-              <path d="M56 48c0 3 2 5 4 5s4-2 4-5" stroke="#27373d" strokeWidth="3" strokeLinecap="round" />
-              <path d="M33 60c5 7 25 7 30 0" stroke="#27373d" strokeWidth="4" strokeLinecap="round" />
-              <path d="M36 60c2 8 22 8 24 0" stroke="#fffaf0" strokeWidth="8" strokeLinecap="round" />
-              <path d="M62 45c2-4 5-5 8-4" stroke="#27373d" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M61 36c2-3 4-5 8-5" stroke="#27373d" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Naruto: headband, spiky blonde hair, blue eyes, orange accent */}
+              <circle cx="48" cy="50" r="27" fill="#f5e6c8" />
+              <path d="M16 30 L48 20 L80 30 L76 40 L48 36 L20 40 Z" fill="#2c5282" stroke="#1a365d" strokeWidth="1.2" />
+              <path d="M24 26 L26 12 L32 22 L40 10 L48 20 L56 10 L64 22 L70 12 L72 26 L66 32 L48 30 L30 32 Z" fill="#f4d03f" stroke="#e5c23a" strokeWidth="0.8" />
+              <path d="M30 64c5 6 13 10 18 10s13-4 18-10l5 16H25l5-16Z" fill="#e67e22" />
+              <ellipse cx="35" cy="48" rx="4" ry="5" fill="#3498db" />
+              <ellipse cx="61" cy="48" rx="4" ry="5" fill="#3498db" />
+              <path d="M36 58c3 5 12 5 15 0" stroke="#2c3e50" strokeWidth="1.8" strokeLinecap="round" />
+              <path d="M39 58c1.5 4 8 4 9.5 0" stroke="#f5e6c8" strokeWidth="3" strokeLinecap="round" />
             </svg>
           </span>
         </button>

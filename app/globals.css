@@ -1,27 +1,28 @@
 :root {
-  --bg-canvas: #d8e0dc;
-  --bg-panel: #f4f1ea;
-  --bg-subtle: #d8dfdb;
-  --bg-sidebar: #cfd8d5;
-  --text-primary: #2d4046;
-  --text-secondary: #55696f;
-  --text-soft: #7f9298;
-  --border-soft: #bfcac4;
-  --border-strong: #aab6b0;
-  --brand: #67828d;
-  --brand-strong: #3d5660;
-  --success: #6d8775;
+  /* Ocean waves palette from image */
+  --bg-canvas: #1e3a5a;
+  --bg-panel: #f0f2f0;
+  --bg-subtle: #7ec1d9;
+  --bg-sidebar: #4a9eb4;
+  --text-primary: #1e3a5a;
+  --text-secondary: #246e7f;
+  --text-soft: #4a9eb4;
+  --border-soft: #7ec1d9;
+  --border-strong: #246e7f;
+  --brand: #246e7f;
+  --brand-strong: #1e3a5a;
+  --success: #246e7f;
   --warning: #b49d86;
   --danger: #936d62;
-  --info: #90a6ab;
-  --brand-rgb: 103 130 141;
-  --brand-strong-rgb: 61 86 96;
-  --success-rgb: 109 135 117;
+  --info: #4a9eb4;
+  --brand-rgb: 36 110 127;
+  --brand-strong-rgb: 30 58 90;
+  --success-rgb: 36 110 127;
   --warning-rgb: 180 157 134;
   --danger-rgb: 147 109 98;
-  --info-rgb: 144 166 171;
-  --panel-rgb: 244 241 234;
-  --shadow-panel: 0 24px 60px rgba(44, 63, 70, 0.12);
+  --info-rgb: 74 158 180;
+  --panel-rgb: 240 242 240;
+  --shadow-panel: 0 24px 60px rgba(30, 58, 90, 0.18);
   --font-sans: Inter, "Segoe UI", Arial, sans-serif;
 }
 
@@ -37,9 +38,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(180deg, rgb(var(--panel-rgb) / 0.28), rgb(var(--brand-rgb) / 0.18)),
-    url("/forest-mist-bg.svg"),
-    linear-gradient(180deg, #ebe0d5 0%, var(--bg-canvas) 42%, #c7d1cc 100%);
+    linear-gradient(180deg, rgb(var(--panel-rgb) / 0.35) 0%, rgb(var(--brand-rgb) / 0.25) 50%, rgb(var(--brand-strong-rgb) / 0.4) 100%),
+    url("/ocean-waves-bg.png");
   background-attachment: fixed;
   background-position: center top;
   background-repeat: no-repeat;

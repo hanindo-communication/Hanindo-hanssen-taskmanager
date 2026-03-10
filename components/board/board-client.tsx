@@ -359,6 +359,16 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
   }, [boardId, initialBoard]);
 
   useEffect(() => {
+    if (!board) return;
+    const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [boardId, board]);
+
+  useEffect(() => {
     if (board) {
       saveBoard(board);
     }
@@ -814,11 +824,11 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
           </div>
         </article>
 
-        <article className={`${styles.insightCard} ${styles.insightCardFull}`}>
+        <article id="manage-team-roster" className={`${styles.insightCard} ${styles.insightCardFull}`}>
           <div className={styles.insightCardHead}>
             <div>
               <p className={styles.metricLabel}>Board members</p>
-              <strong className={styles.insightTitle}>Manage team roster</strong>
+              <strong className={styles.insightTitle}>Team roster</strong>
             </div>
             <button type="button" className={styles.secondaryButton} onClick={handleAddMember}>
               Add member
@@ -1003,7 +1013,7 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
       </div>
 
       {viewMode === 'table' ? (
-        <div className={styles.groupList}>
+        <div id="list-of-tasks" className={styles.groupList}>
           {board.groups.length === 0 ? (
             <div className={styles.emptyState}>
               <p className={styles.heroEyebrow}>No segments</p>
