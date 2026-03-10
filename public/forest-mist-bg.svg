@@ -1,0 +1,60 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="800" y1="0" x2="800" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e6d9cb"/>
+      <stop offset="0.42" stop-color="#d4ddd9"/>
+      <stop offset="1" stop-color="#8da2a7"/>
+    </linearGradient>
+    <linearGradient id="ridgeBack" x1="800" y1="300" x2="800" y2="920" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a9b8bb"/>
+      <stop offset="1" stop-color="#6f878f"/>
+    </linearGradient>
+    <linearGradient id="ridgeMid" x1="800" y1="400" x2="800" y2="1050" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7f959b"/>
+      <stop offset="1" stop-color="#4e6871"/>
+    </linearGradient>
+    <linearGradient id="ridgeFront" x1="800" y1="520" x2="800" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5a737b"/>
+      <stop offset="1" stop-color="#344b52"/>
+    </linearGradient>
+    <filter id="blurLarge" x="-200" y="-200" width="2000" height="1600" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="48"/>
+    </filter>
+    <filter id="blurSoft" x="-200" y="-200" width="2000" height="1600" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1200" fill="url(#sky)"/>
+
+  <g opacity="0.55">
+    <path d="M0 405C114 346 171 333 274 350C352 363 402 349 472 343C568 335 632 383 720 367C796 353 873 283 973 299C1062 314 1139 389 1227 384C1306 380 1369 331 1452 325C1528 319 1561 342 1600 365V1200H0V405Z" fill="url(#ridgeBack)"/>
+  </g>
+
+  <g opacity="0.78">
+    <path d="M0 575C95 541 166 461 270 478C359 492 408 547 493 547C582 547 651 430 749 433C847 435 907 566 986 578C1076 592 1147 457 1235 459C1335 462 1455 593 1600 505V1200H0V575Z" fill="url(#ridgeMid)"/>
+  </g>
+
+  <path d="M0 789C126 707 206 676 302 700C411 727 498 836 575 818C672 794 739 610 844 615C936 620 988 770 1075 787C1159 803 1249 692 1327 673C1421 650 1506 693 1600 620V1200H0V789Z" fill="url(#ridgeFront)"/>
+
+  <g filter="url(#blurLarge)" opacity="0.72">
+    <ellipse cx="781" cy="579" rx="520" ry="126" fill="#f0efeb"/>
+    <ellipse cx="1032" cy="651" rx="396" ry="98" fill="#ece9e4"/>
+    <ellipse cx="490" cy="672" rx="310" ry="84" fill="#eef0ed"/>
+  </g>
+
+  <g filter="url(#blurSoft)" opacity="0.56">
+    <ellipse cx="1204" cy="520" rx="220" ry="46" fill="#f7f2ee"/>
+    <ellipse cx="304" cy="585" rx="240" ry="52" fill="#f5f4ef"/>
+  </g>
+
+  <g opacity="0.95">
+    <path d="M106 1200L141 1045L176 1200H106Z" fill="#21353A"/>
+    <path d="M145 1200L186 1000L227 1200H145Z" fill="#274046"/>
+    <path d="M184 1200L232 955L280 1200H184Z" fill="#1F3539"/>
+    <path d="M233 1200L292 1018L351 1200H233Z" fill="#254147"/>
+    <path d="M1288 1200L1330 1029L1372 1200H1288Z" fill="#274147"/>
+    <path d="M1335 1200L1384 971L1433 1200H1335Z" fill="#1F3539"/>
+    <path d="M1388 1200L1444 1035L1500 1200H1388Z" fill="#274046"/>
+  </g>
+</svg>

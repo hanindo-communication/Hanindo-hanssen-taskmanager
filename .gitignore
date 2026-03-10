@@ -1,0 +1,7 @@
+node_modules
+.vite
+.next
+out
+dist
+*.log
+.DS_Store

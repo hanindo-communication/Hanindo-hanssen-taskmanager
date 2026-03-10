@@ -1,0 +1,423 @@
+.shell {
+  display: grid;
+  grid-template-columns: 288px minmax(0, 1fr);
+  min-height: 100vh;
+  gap: 24px;
+  padding: 20px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 18px;
+  border: 1px solid rgb(var(--brand-rgb) / 0.18);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgb(var(--panel-rgb) / 0.82), rgb(var(--brand-rgb) / 0.14));
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-panel);
+}
+
+.brandBlock {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brandIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #3c535c, #6c8792);
+  color: #fff;
+  font-weight: 700;
+}
+
+.brandEyebrow,
+.sectionLabel,
+.topbarLabel,
+.teamLabel {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.brandTitle,
+.topbarTitle {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionActionButton {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--brand-rgb) / 0.14);
+  color: var(--brand-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: var(--text-secondary);
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.navItem:hover {
+  background: rgb(var(--brand-rgb) / 0.12);
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.navItemEditable {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.navItemActive {
+  background: rgb(var(--brand-rgb) / 0.18);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.navItemLink {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  flex: 1 1 auto;
+}
+
+.navItemLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--success);
+}
+
+.workspacePill,
+.userBubble {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgb(var(--brand-rgb) / 0.2);
+  color: var(--brand-strong);
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex: 0 0 auto;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+}
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgb(var(--brand-rgb) / 0.2), rgb(var(--panel-rgb) / 0.4));
+  color: var(--text-secondary);
+}
+
+.contentArea {
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid rgb(var(--brand-rgb) / 0.16);
+  border-radius: 28px;
+  background: rgb(var(--panel-rgb) / 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-panel);
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchWrap {
+  min-width: 260px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-soft);
+}
+
+.primaryButton {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deleteIconButton {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(var(--danger-rgb) / 0.14);
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.deleteIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.primaryButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.main {
+  padding-top: 22px;
+}
+
+.motivationWidget {
+  position: fixed;
+  left: 10px;
+  bottom: 72px;
+  z-index: 45;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.motivationBubble {
+  max-width: 260px;
+  padding: 14px 16px;
+  border: 1px solid rgb(var(--brand-rgb) / 0.18);
+  border-radius: 22px;
+  background: rgb(var(--panel-rgb) / 0.92);
+  box-shadow: 0 20px 45px rgba(44, 63, 70, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.motivationLabel {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.motivationTitle {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.motivationText {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.motivationButton {
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(var(--panel-rgb) / 0.96), rgb(var(--brand-rgb) / 0.22));
+  box-shadow: 0 18px 36px rgba(44, 63, 70, 0.24);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.motivationAvatar {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.motivationAvatarArt {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(var(--brand-strong-rgb) / 0.34);
+  backdrop-filter: blur(8px);
+}
+
+.modalCard {
+  width: min(100%, 460px);
+  border: 1px solid rgb(var(--brand-rgb) / 0.18);
+  border-radius: 28px;
+  background: rgb(var(--panel-rgb) / 0.96);
+  box-shadow: 0 30px 80px rgba(44, 63, 70, 0.22);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modalEyebrow {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modalSecondaryButton,
+.modalCloseButton {
+  padding: 11px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+@media (max-width: 1080px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+
+  .contentArea {
+    order: 1;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbarActions {
+    flex-wrap: wrap;
+  }
+
+  .searchWrap {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .modalHeader,
+  .modalActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .motivationWidget {
+    left: 16px;
+    bottom: 76px;
+  }
+
+  .motivationBubble {
+    max-width: 220px;
+  }
+
+  .motivationButton {
+    width: 52px;
+    height: 52px;
+  }
+}
