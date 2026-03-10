@@ -211,11 +211,19 @@ export async function saveBoardAsync(board: Board): Promise<void> {
   saveBoard(board);
 }
 
+/** Mark a board as deleted so mergeBoards won't show it again (e.g. after Supabase delete). */
+export function addToDeletedBoardIds(boardId: string): void {
+  if (typeof window === 'undefined') return;
+  const next = [...loadDeletedBoardIds(), boardId];
+  saveDeletedBoardIds(next);
+}
+
 export async function deleteBoardAsync(boardId: string): Promise<void> {
   if (typeof window === 'undefined') return;
   if (isSupabaseConfigured()) {
     try {
       await deleteBoardFromSupabase(boardId);
+      addToDeletedBoardIds(boardId);
     } catch {
       deleteBoard(boardId);
     }

@@ -1,0 +1,337 @@
+@keyframes segmentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.segment {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid rgb(var(--brand-rgb) / 0.14);
+  border-radius: 28px;
+  background: rgb(var(--panel-rgb) / 0.84);
+  box-shadow: var(--shadow-panel);
+  animation: segmentFadeIn 1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    animation: none;
+  }
+}
+
+.title {
+  margin: 0 0 20px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 320px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* --- Pie chart (liquid glass blue, semi-transparent) --- */
+.pieColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(33, 81, 128, 0.28), rgba(66, 153, 225, 0.18));
+  border: 1px solid rgba(66, 153, 225, 0.28);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 24px rgba(30, 58, 90, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.pieWrap {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+.pieSvg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.pieEmpty {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  text-align: center;
+  padding: 1rem;
+}
+
+.pieSegment {
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.pieSegment:hover {
+  opacity: 0.95;
+  filter: brightness(1.06);
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --- Members column --- */
+.membersColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.membersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.membersLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.addMemberButton {
+  padding: 8px 14px;
+  border: 1px solid rgb(var(--brand-rgb) / 0.3);
+  border-radius: 999px;
+  background: rgb(var(--brand-rgb) / 0.12);
+  color: var(--brand-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addMemberButton:hover {
+  background: rgb(var(--brand-rgb) / 0.18);
+}
+
+.memberList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memberItem {
+  border: 1px solid rgb(var(--brand-rgb) / 0.12);
+  border-radius: 16px;
+  background: rgb(var(--panel-rgb) / 0.6);
+  overflow: hidden;
+}
+
+.memberTrigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.memberTrigger:hover {
+  background: rgb(var(--brand-rgb) / 0.08);
+}
+
+.memberName {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberCaret {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-soft);
+}
+
+.memberDropdown {
+  padding: 0 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid rgb(var(--brand-rgb) / 0.1);
+  padding-top: 16px;
+  margin: 0 18px 18px;
+  margin-top: -8px;
+}
+
+.memberNameEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memberNameLabel,
+.projectsLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--text-soft);
+}
+
+.memberNameInput {
+  padding: 10px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.memberNameInput:focus {
+  outline: none;
+  border-color: rgb(var(--brand-rgb) / 0.35);
+}
+
+.projectsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.projectsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.projectRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.projectInput {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.projectInput:focus {
+  outline: none;
+  border-color: rgb(var(--brand-rgb) / 0.35);
+}
+
+.removeProjectButton {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(var(--danger-rgb) / 0.14);
+  color: var(--danger);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.removeProjectButton:hover {
+  background: rgb(var(--danger-rgb) / 0.22);
+}
+
+.addProjectButton {
+  align-self: flex-start;
+  padding: 8px 12px;
+  border: 1px dashed rgb(var(--brand-rgb) / 0.35);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brand-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addProjectButton:hover {
+  background: rgb(var(--brand-rgb) / 0.08);
+}
+
+.removeMemberButton {
+  align-self: flex-start;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--danger-rgb) / 0.14);
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.removeMemberButton:hover {
+  background: rgb(var(--danger-rgb) / 0.22);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pieColumn {
+    max-width: 280px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}

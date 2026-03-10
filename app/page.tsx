@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { AppShell } from '@/components/dashboard/app-shell';
 import { getBoards } from '@/lib/utils/board';
+import { ListOfProjectsSegment } from '@/components/overview/ListOfProjectsSegment';
 import styles from '@/components/board/board-client.module.css';
 
 export default function HomePage() {
@@ -26,6 +27,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      <ListOfProjectsSegment boards={boards} />
     </AppShell>
   );
 }

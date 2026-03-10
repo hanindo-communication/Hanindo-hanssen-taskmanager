@@ -1,3 +1,47 @@
+/* --- Dashboard entrance animations --- */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .contentArea,
+  .topbar,
+  .main,
+  .motivationWidget {
+    animation: none !important;
+  }
+}
+
 .shell {
   display: grid;
   grid-template-columns: 288px minmax(0, 1fr);
@@ -13,9 +57,10 @@
   padding: 24px 18px;
   border: 1px solid rgb(var(--brand-rgb) / 0.18);
   border-radius: 28px;
-  background: linear-gradient(180deg, rgb(var(--panel-rgb) / 0.82), rgb(var(--brand-rgb) / 0.14));
+  background: linear-gradient(180deg, rgb(var(--panel-rgb) / 0.68), rgb(var(--brand-rgb) / 0.12));
   backdrop-filter: blur(14px);
   box-shadow: var(--shadow-panel);
+  animation: slideInLeft 1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .brandBlock {
@@ -36,7 +81,6 @@
 }
 
 .brandEyebrow,
-.sectionLabel,
 .topbarLabel,
 .teamLabel {
   margin: 0;
@@ -44,6 +88,15 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-soft);
+}
+
+.sectionLabel {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .brandTitle,
@@ -82,14 +135,14 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .navItem:hover {
   background: rgb(var(--brand-rgb) / 0.12);
   color: var(--text-primary);
-  transform: translateX(2px);
+  transform: translateX(4px) scale(1.02);
 }
 
 .navItemEditable {
@@ -226,6 +279,7 @@
 
 .contentArea {
   min-width: 0;
+  animation: slideInRight 1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
 
 .topbar {
@@ -236,9 +290,16 @@
   padding: 20px 24px;
   border: 1px solid rgb(var(--brand-rgb) / 0.16);
   border-radius: 28px;
-  background: rgb(var(--panel-rgb) / 0.78);
+  background: rgb(var(--panel-rgb) / 0.65);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-panel);
+  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.topbar:hover {
+  transform: scale(1.01);
+  box-shadow: 0 20px 44px rgba(30, 58, 90, 0.16);
 }
 
 .topbarActions {
@@ -282,6 +343,8 @@
   background: rgb(var(--danger-rgb) / 0.14);
   color: var(--danger);
   cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
 .deleteIcon {
@@ -304,6 +367,8 @@
   font-weight: 600;
   cursor: pointer;
   line-height: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .removeFromFavoritesButton:hover {
@@ -317,6 +382,7 @@
 
 .main {
   padding-top: 22px;
+  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
 }
 
 .motivationWidget {
@@ -327,6 +393,7 @@
   display: grid;
   gap: 10px;
   justify-items: start;
+  animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
 }
 
 .motivationBubble {
@@ -334,7 +401,7 @@
   padding: 14px 16px;
   border: 1px solid rgb(var(--brand-rgb) / 0.18);
   border-radius: 22px;
-  background: rgb(var(--panel-rgb) / 0.92);
+  background: rgb(var(--panel-rgb) / 0.75);
   box-shadow: 0 20px 45px rgba(44, 63, 70, 0.18);
   backdrop-filter: blur(12px);
 }
@@ -365,7 +432,7 @@
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgb(var(--panel-rgb) / 0.96), rgb(var(--brand-rgb) / 0.22));
+  background: linear-gradient(180deg, rgb(var(--panel-rgb) / 0.82), rgb(var(--brand-rgb) / 0.2));
   box-shadow: 0 18px 36px rgba(44, 63, 70, 0.24);
   cursor: pointer;
   overflow: hidden;
@@ -399,7 +466,7 @@
   width: min(100%, 460px);
   border: 1px solid rgb(var(--brand-rgb) / 0.18);
   border-radius: 28px;
-  background: rgb(var(--panel-rgb) / 0.96);
+  background: rgb(var(--panel-rgb) / 0.88);
   box-shadow: 0 30px 80px rgba(44, 63, 70, 0.22);
 }
 

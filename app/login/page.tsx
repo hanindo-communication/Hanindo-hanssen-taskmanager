@@ -1,12 +1,27 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import styles from './login.module.css';
 
+const WELCOME_STORAGE_KEY = 'task-manager.welcomeName';
+
+const EMAIL_TO_NAME: Record<string, string> = {
+  'hanssen@hanindo.co.id': 'Hanssen',
+  'dinda@hanindo.co.id': 'Dinda',
+  'handi@hanindo.co.id': 'Handi',
+  'kezia@hanindo.co.id': 'Kezia',
+  'vira@hanindo.co.id': 'Vira',
+};
+
+function getDisplayName(email: string): string {
+  const key = email.trim().toLowerCase();
+  const beforeAt = key.split('@')[0] ?? '';
+  const fallback = beforeAt ? beforeAt.charAt(0).toUpperCase() + beforeAt.slice(1).toLowerCase() : 'there';
+  return (EMAIL_TO_NAME[key] ?? fallback) || 'there';
+}
+
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +51,8 @@ export default function LoginPage() {
     }
 
     if (data.session) {
-      router.push('/');
-      router.refresh();
+      sessionStorage.setItem(WELCOME_STORAGE_KEY, getDisplayName(email.trim()));
+      window.location.href = '/welcome';
     }
   }
 

@@ -184,18 +184,40 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
                     activeBoardId === board.id ? styles.navItemActive : ''
                   }`}
                 >
-                  <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                  <span className={styles.navItemLink}>
                     <span className={styles.navDot} />
                     <span className={styles.navItemLabel}>{board.name}</span>
-                  </Link>
+                  </span>
                   <button
                     type="button"
                     className={styles.removeFromFavoritesButton}
-                    onClick={() => handleRemoveFromFavorites(board.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      void handleRemoveFromFavorites(board.id);
+                    }}
                     aria-label={`Remove ${board.name} from Favorites`}
                     title="Remove from Favorites"
                   >
                     −
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.deleteIconButton}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      void handleDeleteBoard(board.id);
+                    }}
+                    aria-label={`Delete ${board.name}`}
+                    title="Delete project"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.deleteIcon}>
+                      <path
+                        d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12h12a2 2 0 0 0 2-2V7H4v12a2 2 0 0 0 2 2Z"
+                        fill="currentColor"
+                      />
+                    </svg>
                   </button>
                 </div>
               ) : (
@@ -261,14 +283,18 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
                   activeBoardId === board.id ? styles.navItemActive : ''
                 }`}
               >
-                <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                <span className={styles.navItemLink}>
                   <span className={styles.workspacePill}>{board.workspace.slice(0, 1)}</span>
                   <span className={styles.navItemLabel}>{board.name}</span>
-                </Link>
+                </span>
                 <button
                   type="button"
                   className={styles.deleteIconButton}
-                  onClick={() => handleDeleteBoard(board.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    void handleDeleteBoard(board.id);
+                  }}
                   aria-label={`Delete ${board.name}`}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.deleteIcon}>

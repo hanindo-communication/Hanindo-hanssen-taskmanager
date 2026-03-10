@@ -1,0 +1,53 @@
+.banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px 14px 24px;
+  border-radius: 14px;
+  background: rgb(var(--panel-rgb) / 0.98);
+  box-shadow: 0 12px 32px rgba(30, 58, 90, 0.22);
+  border: 1px solid rgb(var(--brand-rgb) / 0.25);
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close {
+  margin-left: 4px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: rgb(var(--brand-rgb) / 0.12);
+  color: var(--text-primary);
+}
