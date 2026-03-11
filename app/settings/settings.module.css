@@ -1,0 +1,151 @@
+.settingsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 720px;
+}
+
+.settingsHeader {
+  border: 1px solid rgb(var(--brand-rgb) / 0.14);
+  border-radius: 28px;
+  background: rgb(var(--panel-rgb) / 0.68);
+  box-shadow: var(--shadow-panel);
+  padding: 24px;
+}
+
+.settingsEyebrow {
+  margin: 0 0 8px;
+  color: var(--brand);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsTitle {
+  margin: 0 0 8px;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.settingsDescription {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.settingsNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.settingsNavLink {
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgb(var(--brand-rgb) / 0.12);
+  color: var(--brand-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.settingsNavLink:hover {
+  background: rgb(var(--brand-rgb) / 0.2);
+  color: var(--text-primary);
+}
+
+.settingsSection {
+  border: 1px solid rgb(var(--brand-rgb) / 0.14);
+  border-radius: 28px;
+  background: rgb(var(--panel-rgb) / 0.68);
+  box-shadow: var(--shadow-panel);
+  padding: 24px;
+}
+
+.sectionTitle {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sectionDescription {
+  margin: 0 0 20px;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.roleCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.roleCard {
+  border: 1px solid rgb(var(--brand-rgb) / 0.12);
+  border-radius: 20px;
+  background: rgb(var(--panel-rgb) / 0.5);
+  padding: 18px;
+  list-style: none;
+}
+
+.roleCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.roleBadge {
+  display: inline-block;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.roleBadgeAdmin {
+  background: rgb(var(--danger-rgb) / 0.2);
+  color: var(--danger);
+}
+
+.roleBadgeMember {
+  background: rgb(var(--brand-rgb) / 0.25);
+  color: var(--brand-strong);
+}
+
+.roleBadgeViewer {
+  background: rgb(var(--text-soft) / 0.25);
+  color: var(--text-secondary);
+}
+
+.roleName {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rolePerms {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.rolePerms li {
+  margin-bottom: 4px;
+}
+
+.rolePerms li:last-child {
+  margin-bottom: 0;
+}

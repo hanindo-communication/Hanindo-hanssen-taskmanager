@@ -29,6 +29,7 @@ type RowBoardMember = {
   name: string;
   initials: string;
   color: string;
+  role?: string;
 };
 
 type RowTaskGroup = {

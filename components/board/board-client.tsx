@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { priorityLabels, priorityOrder, statusLabels, statusOrder } from '@/lib/mock-data/boards';
 import { loadBoardById, saveBoardAsync } from '@/lib/utils/board-storage';
 import { formatDate, getMember } from '@/lib/utils/board';
+import { useWorkspaceRole } from '@/lib/contexts/WorkspaceRoleContext';
 import type { Board, TaskGroup, TaskItem, TaskPriority, TaskStatus, ViewMode } from '@/lib/types/board';
 import styles from './board-client.module.css';
 
@@ -332,6 +333,8 @@ function EditableTextField({
 }
 
 export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
+  const { canEdit } = useWorkspaceRole();
+  const readOnly = !canEdit;
   const [board, setBoard] = useState<Board | null>(initialBoard);
   const [boardLoading, setBoardLoading] = useState(!initialBoard);
   const [searchTerm, setSearchTerm] = useState('');
@@ -378,12 +381,12 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
   }, [boardId, board]);
 
   useEffect(() => {
-    if (!board) return;
+    if (!board || readOnly) return;
     const t = setTimeout(() => {
       saveBoardAsync(board);
     }, 800);
     return () => clearTimeout(t);
-  }, [board]);
+  }, [board, readOnly]);
 
   const visibleGroups = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -735,27 +738,41 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
   }
 
   return (
-    <section className={styles.boardSurface}>
+    <section className={`${styles.boardSurface} ${readOnly ? styles.boardReadOnly : ''}`}>
+      {readOnly && (
+        <div className={styles.readOnlyBanner} role="status">
+          You are viewing this board as read-only. Only Admins and Members can edit.
+        </div>
+      )}
       <div className={styles.boardHeader}>
         <div>
           <p className={styles.heroEyebrow}>{board.workspace}</p>
-          <EditableTextField
-            className={styles.heroTitleInput}
-            value={board.name}
-            onConfirm={(nextValue) => handleBoardTextChange({ name: nextValue, description: board.description })}
-            ariaLabel="Board name"
-            placeholder="Board name"
-          />
-          <EditableTextField
-            className={styles.heroDescriptionInput}
-            value={board.description}
-            onConfirm={(nextValue) => handleBoardTextChange({ name: board.name, description: nextValue })}
-            ariaLabel="Board description"
-            multiline
-            minRows={3}
-            charsPerRow={72}
-            placeholder="Board description"
-          />
+          {readOnly ? (
+            <>
+              <h2 className={styles.heroTitle}>{board.name}</h2>
+              <p className={styles.heroDescription}>{board.description}</p>
+            </>
+          ) : (
+            <>
+              <EditableTextField
+                className={styles.heroTitleInput}
+                value={board.name}
+                onConfirm={(nextValue) => handleBoardTextChange({ name: nextValue, description: board.description })}
+                ariaLabel="Board name"
+                placeholder="Board name"
+              />
+              <EditableTextField
+                className={styles.heroDescriptionInput}
+                value={board.description}
+                onConfirm={(nextValue) => handleBoardTextChange({ name: board.name, description: nextValue })}
+                ariaLabel="Board description"
+                multiline
+                minRows={3}
+                charsPerRow={72}
+                placeholder="Board description"
+              />
+            </>
+          )}
           <div className={styles.headerHighlights}>
             <span className={styles.inlineBadge}>{allTasks.length} tasks</span>
             <span className={styles.inlineBadge}>{board.groups.length} groups</span>
@@ -764,10 +781,16 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
         </div>
 
         <div className={styles.headerActions}>
-          <button type="button" className={styles.secondaryButton} onClick={handleAddMember}>
-            Add member
-          </button>
-          <button type="button" className={styles.secondaryButton} onClick={() => window.print()}>
+          {!readOnly && (
+            <button type="button" className={styles.secondaryButton} onClick={handleAddMember}>
+              Add member
+            </button>
+          )}
+          <button
+            type="button"
+            className={`${styles.secondaryButton} ${styles.viewerAllowed}`}
+            onClick={() => window.print()}
+          >
             Export PDF
           </button>
           <button

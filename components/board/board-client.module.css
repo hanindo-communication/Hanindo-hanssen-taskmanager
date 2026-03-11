@@ -184,6 +184,30 @@
   line-height: 1.6;
 }
 
+.readOnlyBanner {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: rgb(var(--warning-rgb) / 0.15);
+  color: var(--warning);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.boardReadOnly button:not(.viewerAllowed),
+.boardReadOnly input,
+.boardReadOnly select,
+.boardReadOnly [contenteditable="true"],
+.boardReadOnly [data-draggable="true"] {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.boardReadOnly button.viewerAllowed {
+  pointer-events: auto;
+  opacity: 1;
+}
+
 .heroDescriptionInput {
   min-height: 76px;
   max-width: 720px;

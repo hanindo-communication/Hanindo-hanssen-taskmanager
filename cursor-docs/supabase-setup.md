@@ -119,3 +119,28 @@ Di migration, RLS sudah **enabled** dengan policy "allow all" agar development m
 - Ganti policy jadi `using (auth.uid() = user_id)` (atau sesuai aturan tim).
 
 Schema lengkap dan constraint ada di `supabase/migrations/001_initial_schema.sql`.
+
+---
+
+## 5. Tabel workspace_members (Role per member)
+
+Untuk fitur **Settings → Role per member** (admin/member/viewer by email), buat tabel workspace members:
+
+1. Supabase Dashboard → **SQL Editor** → New query.
+2. Jalankan:
+
+```sql
+create table if not exists workspace_members (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  name text not null default '',
+  role text not null default 'member' check (role in ('admin', 'member', 'viewer'))
+);
+
+alter table workspace_members enable row level security;
+
+create policy "Allow all for anon" on workspace_members
+  for all using (true) with check (true);
+```
+
+3. Setelah itu, app akan baca/tulis role lewat `lib/utils/workspace-members.ts` (fallback ke localStorage jika tabel belum ada).

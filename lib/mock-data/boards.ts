@@ -32,11 +32,11 @@ export const boardData: Board[] = [
       activeAutomations: 4,
     },
     members: [
-      { id: 'hanssen', name: 'Hanssen', initials: 'Ha', color: '#635bff' },
-      { id: 'handi', name: 'Handi', initials: 'Hi', color: '#ffcb57' },
-      { id: 'kezia', name: 'Kezia', initials: 'K', color: '#00c875' },
-      { id: 'dinda', name: 'Dinda', initials: 'D', color: '#ff5ac4' },
-      { id: 'vira', name: 'Vira', initials: 'V', color: '#0073ea' },
+      { id: 'hanssen', name: 'Hanssen', initials: 'Ha', color: '#635bff', role: 'admin' },
+      { id: 'handi', name: 'Handi', initials: 'Hi', color: '#ffcb57', role: 'member' },
+      { id: 'kezia', name: 'Kezia', initials: 'K', color: '#00c875', role: 'member' },
+      { id: 'dinda', name: 'Dinda', initials: 'D', color: '#ff5ac4', role: 'member' },
+      { id: 'vira', name: 'Vira', initials: 'V', color: '#0073ea', role: 'member' },
     ],
     groups: [
       {
@@ -90,11 +90,11 @@ export const boardData: Board[] = [
       activeAutomations: 2,
     },
     members: [
-      { id: 'hanssen', name: 'Hanssen', initials: 'Ha', color: '#635bff' },
-      { id: 'handi', name: 'Handi', initials: 'Hi', color: '#ffcb57' },
-      { id: 'kezia', name: 'Kezia', initials: 'K', color: '#00c875' },
-      { id: 'dinda', name: 'Dinda', initials: 'D', color: '#ff5ac4' },
-      { id: 'vira', name: 'Vira', initials: 'V', color: '#0073ea' },
+      { id: 'hanssen', name: 'Hanssen', initials: 'Ha', color: '#635bff', role: 'admin' },
+      { id: 'handi', name: 'Handi', initials: 'Hi', color: '#ffcb57', role: 'member' },
+      { id: 'kezia', name: 'Kezia', initials: 'K', color: '#00c875', role: 'member' },
+      { id: 'dinda', name: 'Dinda', initials: 'D', color: '#ff5ac4', role: 'member' },
+      { id: 'vira', name: 'Vira', initials: 'V', color: '#0073ea', role: 'member' },
     ],
     groups: [
       {

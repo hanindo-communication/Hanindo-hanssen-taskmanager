@@ -4,11 +4,14 @@ export type TaskStatus = 'workingOnIt' | 'done' | 'stuck' | 'review' | 'planned'
 
 export type TaskPriority = 'critical' | 'high' | 'medium' | 'low';
 
+export type MemberRole = 'admin' | 'member' | 'viewer';
+
 export type BoardMember = {
   id: string;
   name: string;
   initials: string;
   color: string;
+  role?: MemberRole;
 };
 
 export type TaskItem = {

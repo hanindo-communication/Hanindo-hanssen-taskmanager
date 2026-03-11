@@ -14,13 +14,21 @@ import {
   BOARD_STORAGE_EVENT,
 } from '@/lib/utils/board-storage';
 import { getBoards } from '@/lib/utils/board';
+import {
+  loadWorkspaceMembers,
+  getRoleForEmail,
+  WORKSPACE_MEMBERS_EVENT,
+} from '@/lib/utils/workspace-members';
+import { WorkspaceRoleProvider } from '@/lib/contexts/WorkspaceRoleContext';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import type { MemberRole } from '@/lib/types/board';
 import styles from './app-shell.module.css';
 
 type AppShellProps = {
   children: React.ReactNode;
   activeBoardId?: string;
+  activeSection?: 'overview' | 'settings' | 'report-generator' | 'chat-generator';
 };
 
 const motivationQuotes = [
@@ -36,7 +44,7 @@ const motivationQuotes = [
   'One clear task, one clean finish, one stronger version of you.',
 ];
 
-export function AppShell({ children, activeBoardId }: AppShellProps) {
+export function AppShell({ children, activeBoardId, activeSection }: AppShellProps) {
   const router = useRouter();
   const staticBoards = useMemo(() => getBoards(), []);
   const [boards, setBoards] = useState(staticBoards);
@@ -48,6 +56,13 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
   const [user, setUser] = useState<User | null>(null);
   const [openDropdownBoardId, setOpenDropdownBoardId] = useState<string | null>(null);
   const [isFavoritesEditMode, setIsFavoritesEditMode] = useState(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<{ id: string; email: string; name: string; role: MemberRole }[]>([]);
+  const userRole: MemberRole | null = useMemo(() => {
+    if (workspaceMembers.length === 0) return 'admin'; // first-time: allow full access to set up
+    return getRoleForEmail(workspaceMembers, user?.email ?? undefined) ?? 'viewer';
+  }, [workspaceMembers, user?.email]);
+  const canEdit = userRole === 'admin' || userRole === 'member';
+  const canDeleteBoard = userRole === 'admin';
 
   useEffect(() => {
     const supabase = createClient();
@@ -60,6 +75,15 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    function syncMembers() {
+      loadWorkspaceMembers().then(setWorkspaceMembers);
+    }
+    syncMembers();
+    window.addEventListener(WORKSPACE_MEMBERS_EVENT, syncMembers);
+    return () => window.removeEventListener(WORKSPACE_MEMBERS_EVENT, syncMembers);
   }, []);
 
   useEffect(() => {
@@ -150,6 +174,7 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
   }
 
   return (
+    <WorkspaceRoleProvider role={userRole}>
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.brandBlock}>
@@ -163,16 +188,39 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
         <div className={styles.sidebarSection}>
           <div className={styles.sectionHeader}>
             <p className={styles.sectionLabel}>Favorites</p>
-            <button
-              type="button"
-              className={styles.sectionActionButton}
-              onClick={() => setIsFavoritesEditMode((current) => !current)}
-            >
-              {isFavoritesEditMode ? 'Done' : 'Edit'}
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                className={styles.sectionActionButton}
+                onClick={() => setIsFavoritesEditMode((current) => !current)}
+              >
+                {isFavoritesEditMode ? 'Done' : 'Edit'}
+              </button>
+            )}
           </div>
-          <Link className={styles.navItem} href="/">
+          <Link
+            className={`${styles.navItem} ${activeSection === 'overview' ? styles.navItemActive : ''}`}
+            href="/"
+          >
             Overview
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeSection === 'settings' ? styles.navItemActive : ''}`}
+            href="/settings"
+          >
+            Settings
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeSection === 'report-generator' ? styles.navItemActive : ''}`}
+            href="/report-generator"
+          >
+            Report Generator
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeSection === 'chat-generator' ? styles.navItemActive : ''}`}
+            href="/chat-generator"
+          >
+            Chat Generator
           </Link>
           {boards
             .filter((board) => board.favorites)
@@ -201,24 +249,26 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
                   >
                     −
                   </button>
-                  <button
-                    type="button"
-                    className={styles.deleteIconButton}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      void handleDeleteBoard(board.id);
-                    }}
-                    aria-label={`Delete ${board.name}`}
-                    title="Delete project"
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.deleteIcon}>
-                      <path
-                        d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12h12a2 2 0 0 0 2-2V7H4v12a2 2 0 0 0 2 2Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </button>
+                  {canDeleteBoard && (
+                    <button
+                      type="button"
+                      className={styles.deleteIconButton}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void handleDeleteBoard(board.id);
+                      }}
+                      aria-label={`Delete ${board.name}`}
+                      title="Delete project"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.deleteIcon}>
+                        <path
+                          d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12h12a2 2 0 0 0 2-2V7H4v12a2 2 0 0 0 2 2Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div
@@ -267,13 +317,15 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
         <div className={styles.sidebarSection}>
           <div className={styles.sectionHeader}>
             <p className={styles.sectionLabel}>Programs/Projects</p>
-            <button
-              type="button"
-              className={styles.sectionActionButton}
-              onClick={() => setIsProjectEditMode((current) => !current)}
-            >
-              {isProjectEditMode ? 'Done' : 'Edit'}
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                className={styles.sectionActionButton}
+                onClick={() => setIsProjectEditMode((current) => !current)}
+              >
+                {isProjectEditMode ? 'Done' : 'Edit'}
+              </button>
+            )}
           </div>
           {boards.map((board) =>
             isProjectEditMode ? (
@@ -287,23 +339,25 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
                   <span className={styles.workspacePill}>{board.workspace.slice(0, 1)}</span>
                   <span className={styles.navItemLabel}>{board.name}</span>
                 </span>
-                <button
-                  type="button"
-                  className={styles.deleteIconButton}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    void handleDeleteBoard(board.id);
-                  }}
-                  aria-label={`Delete ${board.name}`}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.deleteIcon}>
-                    <path
-                      d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12h12a2 2 0 0 0 2-2V7H4v12a2 2 0 0 0 2 2Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </button>
+                {canDeleteBoard && (
+                  <button
+                    type="button"
+                    className={styles.deleteIconButton}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      void handleDeleteBoard(board.id);
+                    }}
+                    aria-label={`Delete ${board.name}`}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.deleteIcon}>
+                      <path
+                        d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 12h12a2 2 0 0 0 2-2V7H4v12a2 2 0 0 0 2 2Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
             ) : (
               <div
@@ -374,9 +428,11 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
                 readOnly
               />
             </div>
-            <button className={styles.primaryButton} type="button" onClick={openCreateBoardModal}>
-              New project
-            </button>
+            {canEdit && (
+              <button className={styles.primaryButton} type="button" onClick={openCreateBoardModal}>
+                New project
+              </button>
+            )}
             {user ? (
               <div className={styles.userMenu}>
                 <span className={styles.userBubble} title={user.email ?? undefined}>
@@ -477,5 +533,6 @@ export function AppShell({ children, activeBoardId }: AppShellProps) {
         </button>
       </div>
     </div>
+    </WorkspaceRoleProvider>
   );
 }
