@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { workspaceTitle } from '@/lib/constants/workspace';
 import { defaultBoardId } from '@/lib/mock-data/boards';
@@ -23,9 +24,22 @@ import { WorkspaceRoleProvider } from '@/lib/contexts/WorkspaceRoleContext';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import type { MemberRole } from '@/lib/types/board';
+import type { Board, MemberRole } from '@/lib/types/board';
 import { getTimeBasedGreeting, getDisplayName } from '@/lib/utils/greeting';
 import styles from './app-shell.module.css';
+
+const PENDING_NEW_BOARD_KEY = 'task-manager.pendingNewBoard';
+
+function getPendingNewBoard(): Board | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(PENDING_NEW_BOARD_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as Board;
+  } catch {
+    return null;
+  }
+}
 
 type ConfirmState = {
   open: boolean;
@@ -106,7 +120,24 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
 
   useEffect(() => {
     function syncBoards() {
-      loadBoards().then((stored) => setBoards(mergeBoards(staticBoards, stored)));
+      loadBoards().then((stored) => {
+        // #region agent log
+        const merged = mergeBoards(staticBoards, stored);
+        fetch('http://127.0.0.1:7751/ingest/9bcdc013-77cc-4766-ab50-abbe97a27379',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e8284e'},body:JSON.stringify({sessionId:'e8284e',location:'app-shell.tsx:syncBoards',message:'syncBoards applying',data:{storedLen:stored.length,mergedLen:merged.length},timestamp:Date.now(),hypothesisId:'H3,H4'})}).catch(()=>{});
+        // #endregion
+        const pending = getPendingNewBoard();
+        let base = mergeBoards(staticBoards, stored);
+        if (pending) {
+          base = mergeBoards(base, [pending]);
+          // Only clear pending when backend already has this board (so later syncs won't drop it)
+          if (stored.some((b) => b.id === pending.id)) {
+            try {
+              sessionStorage.removeItem(PENDING_NEW_BOARD_KEY);
+            } catch {}
+          }
+        }
+        setBoards((current) => mergeBoards(base, current));
+      });
     }
 
     syncBoards();
@@ -132,19 +163,47 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
   async function handleCreateBoard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    // #region agent log
+    fetch('http://127.0.0.1:7751/ingest/9bcdc013-77cc-4766-ab50-abbe97a27379',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e8284e'},body:JSON.stringify({sessionId:'e8284e',location:'app-shell.tsx:handleCreateBoard:entry',message:'Create board started',data:{boardsLen:boards.length,newBoardName:newBoardName?.slice(0,50),activeBoardId:activeBoardId ?? null},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
+
     const templateBoard =
       staticBoards.find((board) => board.id === activeBoardId) ??
       staticBoards.find((board) => board.id === defaultBoardId) ??
       staticBoards[0];
 
     if (!templateBoard) {
+      // #region agent log
+      fetch('http://127.0.0.1:7751/ingest/9bcdc013-77cc-4766-ab50-abbe97a27379',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e8284e'},body:JSON.stringify({sessionId:'e8284e',location:'app-shell.tsx:handleCreateBoard:noTemplate',message:'No template board',data:{},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
       return;
     }
 
-    const nextBoard = await createBoardFromTemplateAsync(templateBoard, boards, newBoardName);
-    setBoards((current) => mergeBoards(current, [nextBoard]));
+    let nextBoard: Awaited<ReturnType<typeof createBoardFromTemplateAsync>>;
+    try {
+      nextBoard = await createBoardFromTemplateAsync(templateBoard, boards, newBoardName);
+    } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7751/ingest/9bcdc013-77cc-4766-ab50-abbe97a27379',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e8284e'},body:JSON.stringify({sessionId:'e8284e',location:'app-shell.tsx:handleCreateBoard:createThrow',message:'createBoardFromTemplateAsync threw',data:{err: String(err)},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      throw err;
+    }
+
+    // #region agent log
+    const merged = mergeBoards(boards, [nextBoard]);
+    const hasNewBoard = merged.some((b) => b.id === nextBoard.id);
+    fetch('http://127.0.0.1:7751/ingest/9bcdc013-77cc-4766-ab50-abbe97a27379',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e8284e'},body:JSON.stringify({sessionId:'e8284e',location:'app-shell.tsx:handleCreateBoard:afterCreate',message:'After create, before setState',data:{nextBoardId:nextBoard.id,nextBoardName:nextBoard.name,mergedLen:merged.length,hasNewBoard},timestamp:Date.now(),hypothesisId:'H1,H2'})}).catch(()=>{});
+    // #endregion
+
     closeCreateBoardModal();
-    router.push(`/boards/${nextBoard.id}`);
+    // So syncBoards (e.g. after nav/remount) keeps the new board in the list until refetch has it
+    try {
+      sessionStorage.setItem(PENDING_NEW_BOARD_KEY, JSON.stringify(nextBoard));
+    } catch {}
+    const fresh = await loadBoards();
+    const nextList = mergeBoards(mergeBoards(staticBoards, fresh), [nextBoard]);
+    flushSync(() => setBoards(nextList));
+    setTimeout(() => router.push(`/boards/${nextBoard.id}`), 0);
   }
 
   function requestDeleteBoard(boardId: string) {

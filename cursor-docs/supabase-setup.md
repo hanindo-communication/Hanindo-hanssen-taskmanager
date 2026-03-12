@@ -122,6 +122,24 @@ Schema lengkap dan constraint ada di `supabase/migrations/001_initial_schema.sql
 
 ---
 
+## 4b. Deploy di Vercel (supaya data tersimpan setelah refresh)
+
+Agar perubahan board/task tersimpan ke Supabase (bukan cuma localStorage) dan tetap ada setelah refresh/keluar-masuk:
+
+1. **Set environment variables di Vercel**  
+   Vercel → Project → **Settings** → **Environment Variables**. Tambah:
+   - `NEXT_PUBLIC_SUPABASE_URL` = URL project Supabase (sama dengan di `.env.local`)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key dari Supabase Dashboard → Project Settings → API  
+   Simpan lalu **redeploy** (Deployments → ... → Redeploy).
+
+2. **Jalankan migration 003 jika board id pakai string**  
+   Kalau kamu pakai board id seperti `product-launch` (bukan UUID), jalankan isi file `supabase/migrations/003_allow_text_ids.sql` di Supabase Dashboard → SQL Editor, supaya board default bisa di-save ke Supabase.
+
+3. **Auto-save**  
+   App sudah auto-save: setiap perubahan board di-save ke Supabase (debounce ~400 ms) dan saat tab ditutup/refresh (request pakai `keepalive`). Tidak perlu save manual; cukup deploy ke GitHub, Vercel akan build ulang. Data board/task tetap di Supabase.
+
+---
+
 ## 5. Tabel workspace_members (Role per member)
 
 Untuk fitur **Settings → Role per member** (admin/member/viewer by email), buat tabel workspace members:

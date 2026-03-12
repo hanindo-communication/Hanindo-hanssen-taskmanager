@@ -421,12 +421,18 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
     return () => clearTimeout(t);
   }, [board, readOnly]);
 
-  // Save to Supabase when user leaves tab or refreshes, so data persists after deploy/refresh
+  // Save to Supabase when user leaves tab or refreshes (keepalive so request can complete after unload)
   useEffect(() => {
     const saveOnHide = () => {
-      if (boardRef.current && !readOnly) {
-        void saveBoardAsync(boardRef.current);
-      }
+      const b = boardRef.current;
+      if (!b || readOnly) return;
+      // Use fetch with keepalive so the save request is sent even when page unloads (refresh/close)
+      fetch(`/api/boards/${boardId}/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(b),
+        keepalive: true,
+      }).catch(() => {});
     };
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') saveOnHide();
@@ -440,7 +446,7 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('beforeunload', onBeforeUnload);
     };
-  }, [readOnly]);
+  }, [boardId, readOnly]);
 
   const visibleGroups = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();

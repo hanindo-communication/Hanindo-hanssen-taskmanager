@@ -177,7 +177,9 @@ export async function loadBoards(): Promise<Board[]> {
   if (typeof window === 'undefined') return [];
   if (isSupabaseConfigured()) {
     try {
-      return await fetchBoardsFromSupabase();
+      const fromSupabase = await fetchBoardsFromSupabase();
+      const fromLocal = loadStoredBoards();
+      return mergeBoards(fromSupabase, fromLocal);
     } catch {
       return loadStoredBoards();
     }
@@ -189,7 +191,9 @@ export async function loadBoardById(boardId: string): Promise<Board | null> {
   if (typeof window === 'undefined') return null;
   if (isSupabaseConfigured()) {
     try {
-      return await fetchBoardByIdFromSupabase(boardId);
+      const fromSupabase = await fetchBoardByIdFromSupabase(boardId);
+      if (fromSupabase) return fromSupabase;
+      return getStoredBoardById(boardId) ?? null;
     } catch {
       return getStoredBoardById(boardId) ?? null;
     }
@@ -243,7 +247,9 @@ export async function createBoardFromTemplateAsync(
   }
   if (isSupabaseConfigured()) {
     try {
-      return await createBoardFromTemplateInSupabase(template, existingBoards, name);
+      const next = await createBoardFromTemplateInSupabase(template, existingBoards, name);
+      saveBoard(next);
+      return next;
     } catch {
       const next = createBoardFromTemplate(template, existingBoards, name);
       saveBoard(next);
