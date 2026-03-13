@@ -12,7 +12,11 @@ import {
   saveBoardAsync,
   deleteBoardAsync,
   createBoardFromTemplateAsync,
+  loadProjectOrder,
+  moveBoardToTop,
+  sortBoardsByOrder,
   BOARD_STORAGE_EVENT,
+  PROJECT_ORDER_EVENT,
 } from '@/lib/utils/board-storage';
 import { getBoards } from '@/lib/utils/board';
 import {
@@ -22,6 +26,7 @@ import {
 } from '@/lib/utils/workspace-members';
 import { WorkspaceRoleProvider } from '@/lib/contexts/WorkspaceRoleContext';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { OrganizationModal } from '@/components/dashboard/OrganizationModal';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { Board, MemberRole } from '@/lib/types/board';
@@ -81,6 +86,7 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
   const [openDropdownBoardId, setOpenDropdownBoardId] = useState<string | null>(null);
   const [isFavoritesEditMode, setIsFavoritesEditMode] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isOrganizationOpen, setIsOrganizationOpen] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmState>({
     open: false,
     title: '',
@@ -90,6 +96,7 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
   });
   const [workspaceMembers, setWorkspaceMembers] = useState<{ id: string; email: string; name: string; role: MemberRole }[]>([]);
   const [saveFeedback, setSaveFeedback] = useState(false);
+  const [projectOrder, setProjectOrder] = useState<string[]>(() => (typeof window !== 'undefined' ? loadProjectOrder(workspaceTitle) : []));
   const userRole: MemberRole | null = useMemo(() => {
     if (workspaceMembers.length === 0) return 'admin'; // first-time: allow full access to set up
     return getRoleForEmail(workspaceMembers, user?.email ?? undefined) ?? 'viewer';
@@ -115,6 +122,15 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
     const t = setTimeout(() => setSaveFeedback(false), 1800);
     return () => clearTimeout(t);
   }, [saveFeedback]);
+
+  useEffect(() => {
+    const handler = () => setProjectOrder(loadProjectOrder(workspaceTitle));
+    handler();
+    window.addEventListener(PROJECT_ORDER_EVENT, handler);
+    return () => window.removeEventListener(PROJECT_ORDER_EVENT, handler);
+  }, []);
+
+  const orderedBoards = useMemo(() => sortBoardsByOrder(boards, projectOrder), [boards, projectOrder]);
 
   useEffect(() => {
     function syncMembers() {
@@ -350,6 +366,20 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
               <Link className={`${styles.navItemIcon} ${activeSection === 'chat-generator' ? styles.navItemActive : ''}`} href="/chat-generator" title="Mbah Dukun" aria-label="Mbah Dukun">
                 <span className={styles.navIconEmoji} aria-hidden="true">👵</span>
               </Link>
+              <button
+                type="button"
+                className={styles.navItemIcon}
+                onClick={() => setIsOrganizationOpen(true)}
+                title="Organization"
+                aria-label="Organization"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                  <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />
+                  <path d="M12 11v6" />
+                  <path d="M9 14h6" />
+                </svg>
+              </button>
               <div className={styles.sectionIconLabel} title="Favorites">
                 <span className={styles.sectionIcon} aria-hidden="true">★</span>
               </div>
@@ -380,22 +410,30 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
           >
             👵 Mbah Dukun
           </Link>
+          <button
+            type="button"
+            className={styles.navItem}
+            onClick={() => setIsOrganizationOpen(true)}
+          >
+            Organization
+          </button>
             </>
           )}
           {isSidebarCollapsed
-            ? boards.filter((board) => board.favorites).map((board) => (
+            ? orderedBoards.filter((board) => board.favorites).map((board) => (
                 <Link
                   key={board.id}
                   href={`/boards/${board.id}`}
                   className={`${styles.navItemPill} ${activeBoardId === board.id ? styles.navItemActive : ''}`}
                   title={board.name}
                   aria-label={board.name}
+                  onClick={() => moveBoardToTop(workspaceTitle, board.id)}
                 >
                   {board.name.slice(0, 1).toUpperCase()}
                 </Link>
               ))
             : null}
-          {!isSidebarCollapsed && boards
+          {!isSidebarCollapsed && orderedBoards
             .filter((board) => board.favorites)
             .map((board) =>
               isFavoritesEditMode ? (
@@ -459,7 +497,11 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
                     activeBoardId === board.id ? styles.navItemActive : ''
                   }`}
                 >
-                  <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                  <Link
+                    href={`/boards/${board.id}`}
+                    className={styles.navItemLink}
+                    onClick={() => moveBoardToTop(workspaceTitle, board.id)}
+                  >
                     <span className={styles.navDot} />
                     <span className={styles.navItemLabel}>{board.name}</span>
                   </Link>
@@ -478,14 +520,20 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
                       <Link
                         className={styles.navItemDropdownLink}
                         href={`/boards/${board.id}#manage-team-roster`}
-                        onClick={() => setOpenDropdownBoardId(null)}
+                        onClick={() => {
+                          setOpenDropdownBoardId(null);
+                          moveBoardToTop(workspaceTitle, board.id);
+                        }}
                       >
                         Team roster
                       </Link>
                       <Link
                         className={styles.navItemDropdownLink}
                         href={`/boards/${board.id}#list-of-tasks`}
-                        onClick={() => setOpenDropdownBoardId(null)}
+                        onClick={() => {
+                          setOpenDropdownBoardId(null);
+                          moveBoardToTop(workspaceTitle, board.id);
+                        }}
                       >
                         List of tasks
                       </Link>
@@ -502,13 +550,14 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
               <div className={styles.sectionIconLabel} title="Programs/Projects">
                 <span className={styles.sectionIcon} aria-hidden="true">📁</span>
               </div>
-              {boards.map((board) => (
+              {orderedBoards.map((board) => (
                 <Link
                   key={board.id}
                   href={`/boards/${board.id}`}
                   className={`${styles.navItemPill} ${activeBoardId === board.id ? styles.navItemActive : ''}`}
                   title={board.name}
                   aria-label={board.name}
+                  onClick={() => moveBoardToTop(workspaceTitle, board.id)}
                 >
                   {board.name.slice(0, 1).toUpperCase()}
                 </Link>
@@ -528,7 +577,7 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
               </button>
             )}
           </div>
-          {boards.map((board) =>
+          {orderedBoards.map((board) =>
             isProjectEditMode ? (
               <div
                 key={board.id}
@@ -576,7 +625,11 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
                   activeBoardId === board.id ? styles.navItemActive : ''
                 }`}
               >
-                <Link href={`/boards/${board.id}`} className={styles.navItemLink}>
+                <Link
+                  href={`/boards/${board.id}`}
+                  className={styles.navItemLink}
+                  onClick={() => moveBoardToTop(workspaceTitle, board.id)}
+                >
                   <span className={styles.workspacePill}>{board.workspace.slice(0, 1)}</span>
                   <span className={styles.navItemLabel}>{board.name}</span>
                 </Link>
@@ -595,14 +648,20 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
                     <Link
                       className={styles.navItemDropdownLink}
                       href={`/boards/${board.id}#manage-team-roster`}
-                      onClick={() => setOpenDropdownBoardId(null)}
+                      onClick={() => {
+                        setOpenDropdownBoardId(null);
+                        moveBoardToTop(workspaceTitle, board.id);
+                      }}
                     >
                       Team roster
                     </Link>
                     <Link
                       className={styles.navItemDropdownLink}
                       href={`/boards/${board.id}#list-of-tasks`}
-                      onClick={() => setOpenDropdownBoardId(null)}
+                      onClick={() => {
+                        setOpenDropdownBoardId(null);
+                        moveBoardToTop(workspaceTitle, board.id);
+                      }}
                     >
                       List of tasks
                     </Link>
@@ -745,6 +804,13 @@ export function AppShell({ children, activeBoardId, activeSection }: AppShellPro
         onConfirm={confirm.onConfirm}
         onCancel={() => setConfirm((c) => ({ ...c, open: false }))}
       />
+
+      {isOrganizationOpen && (
+        <OrganizationModal
+          workspace={workspaceTitle}
+          onClose={() => setIsOrganizationOpen(false)}
+        />
+      )}
 
       <div className={styles.motivationWidget}>
         {isMotivationOpen ? (

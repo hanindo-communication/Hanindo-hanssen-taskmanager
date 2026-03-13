@@ -1,14 +1,12 @@
 import { workspaceTitle } from '@/lib/constants/workspace';
 import type { Board, TaskPriority, TaskStatus } from '@/lib/types/board';
 
-const statusOrder: TaskStatus[] = ['workingOnIt', 'review', 'planned', 'stuck', 'done'];
+const statusOrder: TaskStatus[] = ['pending', 'followUp', 'done'];
 const priorityOrder: TaskPriority[] = ['critical', 'high', 'medium', 'low'];
 
 export const statusLabels: Record<TaskStatus, string> = {
-  workingOnIt: 'Working on it',
-  review: 'In review',
-  planned: 'Planned',
-  stuck: 'Stuck',
+  pending: 'Pending',
+  followUp: 'Follow Up',
   done: 'Done',
 };
 
@@ -47,7 +45,7 @@ export const boardData: Board[] = [
           {
             id: 'task-1',
             name: 'Finalize hero visuals',
-            status: 'review',
+            status: 'followUp',
             assigneeId: 'kezia',
             dueDate: '2026-03-12',
             priority: 'high',
@@ -57,7 +55,7 @@ export const boardData: Board[] = [
           {
             id: 'task-2',
             name: 'QA email nurture flow',
-            status: 'workingOnIt',
+            status: 'followUp',
             assigneeId: 'handi',
             dueDate: '2026-03-14',
             priority: 'critical',
@@ -105,7 +103,7 @@ export const boardData: Board[] = [
           {
             id: 'task-7',
             name: 'Gather business requirements',
-            status: 'workingOnIt',
+            status: 'followUp',
             assigneeId: 'kezia',
             dueDate: '2026-03-11',
             priority: 'high',
@@ -115,7 +113,7 @@ export const boardData: Board[] = [
           {
             id: 'task-8',
             name: 'Set integration scope',
-            status: 'review',
+            status: 'followUp',
             assigneeId: 'hanssen',
             dueDate: '2026-03-16',
             priority: 'critical',
@@ -132,7 +130,7 @@ export const boardData: Board[] = [
           {
             id: 'task-9',
             name: 'Train operations team',
-            status: 'planned',
+            status: 'pending',
             assigneeId: 'dinda',
             dueDate: '2026-03-19',
             priority: 'medium',

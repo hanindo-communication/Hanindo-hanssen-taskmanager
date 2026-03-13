@@ -1,0 +1,119 @@
+@keyframes segmentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.segment {
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid rgb(var(--brand-rgb) / 0.14);
+  border-radius: 28px;
+  background: rgb(var(--panel-rgb) / 0.84);
+  box-shadow: var(--shadow-panel);
+  animation: segmentFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    animation: none;
+  }
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.description {
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+.empty {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 18px;
+  border-radius: 16px;
+  background: rgb(var(--panel-rgb) / 0.6);
+  border: 1px solid rgb(var(--brand-rgb) / 0.1);
+}
+
+.cardTitleLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.cardTitleLink:hover .cardTitle {
+  color: var(--brand-strong);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.taskList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.taskItem {
+  margin-bottom: 6px;
+}
+
+.taskItem:last-child {
+  margin-bottom: 0;
+}
+
+.taskLink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.taskLink:hover {
+  background: rgb(var(--brand-rgb) / 0.1);
+  color: var(--brand-strong);
+}
+
+.taskName {
+  font-weight: 500;
+}
+
+.taskDue {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}

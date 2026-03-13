@@ -1,6 +1,6 @@
 export type ViewMode = 'table' | 'kanban';
 
-export type TaskStatus = 'workingOnIt' | 'done' | 'stuck' | 'review' | 'planned';
+export type TaskStatus = 'pending' | 'followUp' | 'done';
 
 export type TaskPriority = 'critical' | 'high' | 'medium' | 'low';
 

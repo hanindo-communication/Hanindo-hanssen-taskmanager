@@ -1,0 +1,14 @@
+---
+description: Auto-save and Supabase sync – all user edits and deletes must persist to Supabase
+alwaysApply: true
+---
+
+# Auto-save dan sinkronisasi ke Supabase
+
+Saat mengubah fitur di board, sidebar, atau List of Projects:
+
+- **Edit:** Field yang user ubah harus commit ke state on blur (bukan hanya on Confirm) agar auto-save ke Supabase.
+- **Delete:** Setiap delete (task, group, board, project/member) harus memicu **saveBoardAsync**, **deleteBoardAsync**, atau **saveOverviewMemberProjects** agar perubahan persist; jangan hanya update state lokal.
+- **Source of truth:** Data persist di Supabase; hindari hanya localStorage untuk data yang harus tersedia setelah refresh atau di device lain.
+
+Detail lengkap: `cursor-docs/auto-save-and-sync.md`.

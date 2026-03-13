@@ -35,10 +35,8 @@ type DragState = {
 };
 
 const statusClassNames: Record<TaskStatus, string> = {
-  workingOnIt: styles.statusWorkingOnIt,
-  review: styles.statusReview,
-  planned: styles.statusPlanned,
-  stuck: styles.statusStuck,
+  pending: styles.statusPending,
+  followUp: styles.statusFollowUp,
   done: styles.statusDone,
 };
 
@@ -114,7 +112,7 @@ function buildNewTask(group: TaskGroup): TaskItem {
   return {
     id: `${group.id}-${Date.now()}`,
     name: 'New action item',
-    status: 'planned',
+    status: 'pending',
     assigneeId: '',
     dueDate: '2026-03-21',
     priority: 'medium',

@@ -1039,24 +1039,14 @@
   font-weight: 700;
 }
 
-.statusWorkingOnIt {
-  background: rgb(var(--info-rgb) / 0.16);
-  color: var(--info);
-}
-
-.statusReview {
-  background: rgb(var(--brand-rgb) / 0.16);
-  color: var(--brand-strong);
-}
-
-.statusPlanned {
+.statusPending {
   background: rgb(var(--warning-rgb) / 0.18);
   color: #8e775f;
 }
 
-.statusStuck {
-  background: rgb(var(--danger-rgb) / 0.16);
-  color: var(--danger);
+.statusFollowUp {
+  background: rgb(var(--info-rgb) / 0.16);
+  color: var(--info);
 }
 
 .statusDone {
@@ -1085,7 +1075,7 @@
 }
 
 .kanbanGrid {
-  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
   overflow-x: auto;
 }
 
@@ -1309,7 +1299,7 @@
   }
 
   .kanbanGrid {
-    grid-template-columns: repeat(5, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
   }
 }
 

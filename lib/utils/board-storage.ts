@@ -18,7 +18,9 @@ function isSupabaseConfigured(): boolean {
 
 const BOARD_STORAGE_KEY = 'task-manager.boards';
 const DELETED_BOARD_IDS_KEY = 'task-manager.deleted-board-ids';
+const PROJECT_ORDER_KEY = 'task-manager.projectOrder';
 export const BOARD_STORAGE_EVENT = 'task-manager:boards-updated';
+export const PROJECT_ORDER_EVENT = 'task-manager:project-order-updated';
 
 function normalizeBoard(board: Board): Board {
   const normalizedGroups =
@@ -109,6 +111,62 @@ export function mergeBoards(staticBoards: Board[], storedBoards = loadStoredBoar
   });
 
   return Array.from(boardMap.values());
+}
+
+function loadProjectOrderStorage(): Record<string, string[]> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(PROJECT_ORDER_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? (parsed as Record<string, string[]>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveProjectOrderStorage(data: Record<string, string[]>) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(PROJECT_ORDER_KEY, JSON.stringify(data));
+}
+
+/** Load saved project order for a workspace (board ids in display order). */
+export function loadProjectOrder(workspace: string): string[] {
+  const data = loadProjectOrderStorage();
+  const order = data[workspace];
+  return Array.isArray(order) ? order.filter((id): id is string => typeof id === 'string') : [];
+}
+
+/** Save project order for a workspace. */
+export function saveProjectOrder(workspace: string, order: string[]) {
+  const data = loadProjectOrderStorage();
+  data[workspace] = order;
+  saveProjectOrderStorage(data);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(PROJECT_ORDER_EVENT, { detail: { workspace } }));
+  }
+}
+
+/** Move a board to the top of the project order and persist. Call when user navigates to a board. */
+export function moveBoardToTop(workspace: string, boardId: string) {
+  const order = loadProjectOrder(workspace);
+  const next = [boardId, ...order.filter((id) => id !== boardId)];
+  saveProjectOrder(workspace, next);
+}
+
+/** Sort boards by saved project order. Boards in order appear first (in that order); others follow in existing order. */
+export function sortBoardsByOrder(boards: Board[], order: string[]): Board[] {
+  if (order.length === 0) return boards;
+  const orderSet = new Set(order);
+  const ordered: Board[] = [];
+  for (const id of order) {
+    const board = boards.find((b) => b.id === id);
+    if (board) ordered.push(board);
+  }
+  for (const board of boards) {
+    if (!orderSet.has(board.id)) ordered.push(board);
+  }
+  return ordered;
 }
 
 export function getStoredBoardById(boardId: string): Board | undefined {

@@ -6,6 +6,7 @@ import { workspaceTitle } from '@/lib/constants/workspace';
 import {
   fetchOverviewMemberProjects,
   saveOverviewMemberProjects,
+  OVERVIEW_MEMBER_PROJECTS_UPDATED,
 } from '@/lib/supabase/overview-member-projects';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import styles from './ListOfProjectsSegment.module.css';
@@ -108,12 +109,22 @@ export function ListOfProjectsSegment({ boards }: ListOfProjectsSegmentProps) {
   const membersRef = useRef(members);
   membersRef.current = members;
 
-  // Load from Supabase on mount; fallback stays as initial state (localStorage or default)
-  useEffect(() => {
+  const refetchMembers = useCallback(() => {
     fetchOverviewMemberProjects(workspaceTitle).then((data) => {
       if (data !== null) setMembers(data);
     });
   }, []);
+
+  // Load from Supabase on mount; fallback stays as initial state (localStorage or default)
+  useEffect(() => {
+    refetchMembers();
+  }, [refetchMembers]);
+
+  // When Organization modal saves, refetch so List of Projects and pie chart stay in sync
+  useEffect(() => {
+    window.addEventListener(OVERVIEW_MEMBER_PROJECTS_UPDATED, refetchMembers);
+    return () => window.removeEventListener(OVERVIEW_MEMBER_PROJECTS_UPDATED, refetchMembers);
+  }, [refetchMembers]);
 
   // When user clicks topbar "Save" button, persist current members & projects to Supabase
   useEffect(() => {

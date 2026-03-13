@@ -8,6 +8,9 @@ export type MemberWithProjects = {
   projects: string[];
 };
 
+/** Dispatch this event after saving from Organization modal so List of Projects refetches. */
+export const OVERVIEW_MEMBER_PROJECTS_UPDATED = 'task-manager:overview-member-projects-updated';
+
 function isSupabaseConfigured(): boolean {
   return createClient() !== null;
 }
