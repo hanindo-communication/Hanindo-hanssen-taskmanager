@@ -24,9 +24,6 @@ type BoardClientProps = {
   boardId: string;
 };
 
-type StatusFilter = TaskStatus | 'all';
-type PriorityFilter = TaskPriority | 'all';
-
 type DragState = {
   taskId: string;
   sourceGroupId: string;
@@ -48,6 +45,9 @@ const priorityClassNames: Record<TaskPriority, string> = {
 };
 
 const memberColorPalette = ['#635bff', '#0073ea', '#00c875', '#fdab3d', '#ff5ac4', '#00a3ab', '#784bd1', '#ff642e'];
+
+/** Accent stripe for segments in #list-of-tasks */
+const LIST_OF_TASKS_SEGMENT_COLOR = '#f5c518';
 
 function getInitials(name: string): string {
   return name
@@ -130,17 +130,6 @@ function buildNewMember(existingCount: number): Board['members'][number] {
     initials: `N${label}`,
     color: memberColorPalette[existingCount % memberColorPalette.length],
   };
-}
-
-function getSafeDate(date: string): Date {
-  return new Date(`${date}T00:00:00Z`);
-}
-
-function getDaysUntil(date: string, referenceDate: string): number {
-  const today = getSafeDate(referenceDate);
-  const target = getSafeDate(date);
-
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 function getTaskLocation(board: Board, taskId: string) {
@@ -348,11 +337,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
   const readOnly = !canEdit;
   const [board, setBoard] = useState<Board | null>(initialBoard);
   const [boardLoading, setBoardLoading] = useState(!initialBoard);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
-  const [assigneeFilter, setAssigneeFilter] = useState('all');
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
@@ -378,7 +362,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
     });
   }, []);
   const allTasks = useMemo(() => board?.groups.flatMap((group) => group.tasks) ?? [], [board]);
-  const todayReference = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   // Always load from storage (Supabase + localStorage) so saved changes (e.g. new members) persist after refresh
   useEffect(() => {
@@ -454,69 +437,9 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
     return () => window.removeEventListener('task-manager:save-request', handler);
   }, [readOnly]);
 
-  const visibleGroups = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
-    return (board?.groups ?? [])
-      .map((group) => ({
-        ...group,
-        tasks: group.tasks.filter((task) => {
-          const matchesSearch =
-            normalizedSearch.length === 0 ||
-            task.name.toLowerCase().includes(normalizedSearch) ||
-            task.notes.toLowerCase().includes(normalizedSearch);
-          const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-          const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-          const matchesAssignee = assigneeFilter === 'all' || task.assigneeId === assigneeFilter;
-          return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
-        }),
-      }));
-  }, [assigneeFilter, board, priorityFilter, searchTerm, statusFilter]);
+  const visibleGroups = useMemo(() => board?.groups ?? [], [board]);
 
   const visibleTasks = useMemo(() => visibleGroups.flatMap((group) => group.tasks), [visibleGroups]);
-  const completedTasks = useMemo(() => allTasks.filter((task) => task.status === 'done').length, [allTasks]);
-  const overallProgress = useMemo(() => {
-    if (allTasks.length === 0) {
-      return 0;
-    }
-
-    return Math.round(allTasks.reduce((sum, task) => sum + task.progress, 0) / allTasks.length);
-  }, [allTasks]);
-  const overdueCount = useMemo(
-    () => allTasks.filter((task) => task.status !== 'done' && getDaysUntil(task.dueDate, todayReference) < 0).length,
-    [allTasks, todayReference],
-  );
-  const statusMetrics = useMemo(
-    () =>
-      statusOrder.map((status) => ({
-        status,
-        count: allTasks.filter((task) => task.status === status).length,
-      })),
-    [allTasks],
-  );
-  const memberLoad = useMemo(
-    () =>
-      (board?.members ?? [])
-        .map((member) => {
-          const assignedTasks = allTasks.filter((task) => task.assigneeId === member.id && task.status !== 'done');
-          const averageProgress =
-            assignedTasks.length === 0
-              ? 0
-              : Math.round(assignedTasks.reduce((sum, task) => sum + task.progress, 0) / assignedTasks.length);
-
-          return {
-            member,
-            activeTasks: assignedTasks.length,
-            averageProgress,
-          };
-        })
-        .sort((left, right) => right.activeTasks - left.activeTasks || right.averageProgress - left.averageProgress),
-    [allTasks, board],
-  );
-  const completionRate = allTasks.length === 0 ? 0 : Math.round((completedTasks / allTasks.length) * 100);
-  const progressRing = {
-    background: `conic-gradient(var(--brand) ${overallProgress * 3.6}deg, rgba(99, 91, 255, 0.12) 0deg)`,
-  };
 
   const taskGroupMap = useMemo(() => {
     const map = new Map<string, { id: string; name: string }>();
@@ -626,7 +549,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
   }
 
   function handleRemoveMember(memberId: string) {
-    setAssigneeFilter((current) => (current === memberId ? 'all' : current));
     const memberName = board?.members.find((m) => m.id === memberId)?.name ?? 'Member';
     const nextBoard = board
       ? {
@@ -704,11 +626,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
         const taskIdsToRemove = group?.tasks.map((task) => task.id) ?? [];
         setSelectedTaskIds((current) => current.filter((id) => !taskIdsToRemove.includes(id)));
         setDetailTaskId((current) => (current && taskIdsToRemove.includes(current) ? null : current));
-        setCollapsedGroups((current) => {
-          const next = { ...current };
-          delete next[groupId];
-          return next;
-        });
         const nextBoard = board ? deleteGroup(board, groupId) : null;
         updateCurrentBoard((currentBoard) => deleteGroup(currentBoard, groupId), {
           action: 'Deleted segment',
@@ -741,13 +658,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
           : group,
       ),
     }), { action: 'Added task', details: groupName });
-  }
-
-  function toggleGroup(groupId: string) {
-    setCollapsedGroups((current) => ({
-      ...current,
-      [groupId]: !current[groupId],
-    }));
   }
 
   function clearDragState() {
@@ -874,6 +784,185 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
       })),
   }));
 
+  const taskTableHead = (
+    <thead>
+      <tr>
+        <th className={styles.checkboxColumn}>Pick</th>
+        <th className={styles.dragColumn}>Move</th>
+        <th>Item</th>
+        <th>Status</th>
+        <th>Owner</th>
+        <th>Due date</th>
+        <th>Priority</th>
+        <th>Progress</th>
+        <th>Notes</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+  );
+
+  function renderTaskTableRow(task: TaskItem, group: TaskGroup, currentBoard: Board) {
+    const member = getMember(currentBoard, task.assigneeId);
+
+    return (
+      <tr
+        key={task.id}
+        className={`${styles.taskRow} ${dragState?.taskId === task.id ? styles.taskRowDragging : ''} ${
+          tableDropTarget?.groupId === group.id && tableDropTarget.taskId === task.id ? styles.taskRowDropActive : ''
+        }`}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setTableDropTarget({ groupId: group.id, taskId: task.id });
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          handleTableDrop(group.id, task.id);
+        }}
+      >
+        <td>
+          <input
+            type="checkbox"
+            checked={selectedTaskIds.includes(task.id)}
+            onChange={() => toggleTaskSelection(task.id)}
+            aria-label={`Select ${task.name}`}
+          />
+        </td>
+        <td>
+          <div
+            draggable
+            className={styles.dragHandle}
+            onDragStart={() =>
+              setDragState({
+                taskId: task.id,
+                sourceGroupId: group.id,
+                sourceStatus: task.status,
+                mode: 'table',
+              })
+            }
+            onDragEnd={clearDragState}
+            role="presentation"
+          >
+            ⋮⋮
+          </div>
+        </td>
+        <td>
+          <div className={styles.itemCell}>
+            <EditableTextField
+              className={styles.itemTextarea}
+              value={task.name}
+              onConfirm={(nextValue) => handleTaskChange(task.id, { name: nextValue })}
+              onDoubleClick={() => setDetailTaskId(task.id)}
+              ariaLabel={`Task item ${task.name}`}
+              multiline
+              charsPerRow={30}
+            />
+            <button
+              type="button"
+              className={styles.inlineLinkButton}
+              onClick={() => setDetailTaskId(task.id)}
+            >
+              Open full info
+            </button>
+          </div>
+        </td>
+        <td>
+          <select
+            className={`${styles.inlineSelect} ${statusClassNames[task.status]}`}
+            value={task.status}
+            onChange={(event) =>
+              handleTaskChange(task.id, {
+                status: event.target.value as TaskStatus,
+              })
+            }
+          >
+            {statusOrder.map((status) => (
+              <option key={status} value={status}>
+                {statusLabels[status]}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <div className={styles.personCell}>
+            <span className={styles.avatar} style={{ background: member?.color ?? '#d0d7f2' }}>
+              {member?.initials ?? '--'}
+            </span>
+            <select
+              className={styles.inlineSelect}
+              value={task.assigneeId}
+              onChange={(event) =>
+                handleTaskChange(task.id, {
+                  assigneeId: event.target.value,
+                })
+              }
+            >
+              <option value="">Unassigned</option>
+              {currentBoard.members.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </td>
+        <td>
+          <input
+            className={styles.inlineDate}
+            type="date"
+            value={task.dueDate}
+            onChange={(event) => handleTaskChange(task.id, { dueDate: event.target.value })}
+          />
+        </td>
+        <td>
+          <select
+            className={`${styles.inlineSelect} ${priorityClassNames[task.priority]}`}
+            value={task.priority}
+            onChange={(event) =>
+              handleTaskChange(task.id, {
+                priority: event.target.value as TaskPriority,
+              })
+            }
+          >
+            {priorityOrder.map((priority) => (
+              <option key={priority} value={priority}>
+                {priorityLabels[priority]}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <div className={styles.progressCell}>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={task.progress}
+              onChange={(event) =>
+                handleTaskChange(task.id, {
+                  progress: Number(event.target.value),
+                })
+              }
+            />
+            <span>{task.progress}%</span>
+          </div>
+        </td>
+        <td>
+          <EditableTextField
+            className={styles.notesInput}
+            value={task.notes}
+            onConfirm={(nextValue) => handleTaskChange(task.id, { notes: nextValue })}
+            ariaLabel={`Task notes ${task.name}`}
+          />
+        </td>
+        <td>
+          <button type="button" className={styles.dangerButtonSmall} onClick={() => handleDeleteTask(task.id)}>
+            Delete
+          </button>
+        </td>
+      </tr>
+    );
+  }
+
   if (boardLoading) {
     return (
       <section className={styles.boardSurface}>
@@ -903,7 +992,7 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
           You are viewing this board as read-only. Only Admins and Members can edit.
         </div>
       )}
-      <div className={styles.boardHeader}>
+      <div className={`${styles.boardHeader} ${styles.boardHeaderCompact}`}>
         <div>
           <p className={styles.heroEyebrow}>{board.workspace}</p>
           {readOnly ? (
@@ -965,72 +1054,11 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
 
       <ContextualHint boards={board ? [board] : []} activeBoardId={boardId} />
 
-      <div className={styles.analyticsGrid}>
-        <article className={styles.insightCard}>
-          <div className={styles.insightCardHead}>
-            <div>
-              <p className={styles.metricLabel}>Team load</p>
-              <strong className={styles.insightTitle}>Workload by owner</strong>
-            </div>
-          </div>
-          <div className={styles.loadList}>
-            {memberLoad.map(({ member, activeTasks, averageProgress }) => (
-              <div key={member.id} className={styles.loadItem}>
-                <div className={styles.loadHeader}>
-                  <div className={styles.personCell}>
-                    <span className={styles.avatar} style={{ background: member.color }}>
-                      {member.initials}
-                    </span>
-                    <div>
-                      <EditableTextField
-                        className={styles.memberNameInput}
-                        value={member.name}
-                        onConfirm={(nextValue) => handleMemberChange(member.id, nextValue)}
-                        ariaLabel={`Member name ${member.name}`}
-                      />
-                      <p>{activeTasks} active tasks</p>
-                    </div>
-                  </div>
-                  <span className={styles.loadValue}>{averageProgress}%</span>
-                </div>
-                <div className={styles.storyBar}>
-                  <span style={{ width: `${averageProgress}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className={`${styles.insightCard} ${styles.insightCardAccent}`}>
-          <div className={styles.insightCardHead}>
-            <div>
-              <p className={styles.metricLabel}>Task health</p>
-              <strong className={styles.insightTitle}>Execution snapshot</strong>
-            </div>
-            <span className={styles.inlineBadge}>{completionRate}% completed</span>
-          </div>
-          <div className={styles.healthGrid}>
-            <div className={styles.progressRingWrap}>
-              <div className={styles.progressRing} style={progressRing}>
-                <div className={styles.progressRingInner}>
-                  <strong>{overallProgress}%</strong>
-                  <span>avg progress</span>
-                </div>
-              </div>
-            </div>
-            <div className={styles.statusLegend}>
-              {statusMetrics.map((item) => (
-                <div key={item.status} className={styles.legendRow}>
-                  <span className={`${styles.legendDot} ${statusClassNames[item.status]}`} />
-                  <span>{statusLabels[item.status]}</span>
-                  <strong>{item.count}</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        </article>
-
-        <article id="manage-team-roster" className={`${styles.insightCard} ${styles.insightCardFull}`}>
+      <div className={`${styles.analyticsGrid} ${styles.analyticsGridCompact}`}>
+        <article
+          id="manage-team-roster"
+          className={`${styles.insightCard} ${styles.insightCardFull} ${styles.teamRosterCompact}`}
+        >
           <div className={styles.insightCardHead}>
             <div>
               <p className={styles.metricLabel}>Board members</p>
@@ -1094,62 +1122,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
             </table>
           </div>
         </article>
-      </div>
-
-      <div className={styles.toolbar}>
-        <div className={styles.toolbarControls}>
-          <input
-            type="search"
-            className={styles.controlInput}
-            placeholder="Search tasks or notes"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-          <select
-            className={styles.controlSelect}
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-          >
-            <option value="all">All statuses</option>
-            {statusOrder.map((status) => (
-              <option key={status} value={status}>
-                {statusLabels[status]}
-              </option>
-            ))}
-          </select>
-          <select
-            className={styles.controlSelect}
-            value={assigneeFilter}
-            onChange={(event) => setAssigneeFilter(event.target.value)}
-          >
-            <option value="all">All owners</option>
-            {board.members.map((person) => (
-              <option key={person.id} value={person.id}>
-                {person.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className={styles.controlSelect}
-            value={priorityFilter}
-            onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}
-          >
-            <option value="all">All priorities</option>
-            {priorityOrder.map((priority) => (
-              <option key={priority} value={priority}>
-                {priorityLabels[priority]}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            className={styles.primaryCta}
-            onClick={() => board.groups[0] && handleAddTask(board.groups[0].id)}
-            disabled={board.groups.length === 0}
-          >
-            New task
-          </button>
-        </div>
       </div>
 
       {selectedCount > 0 ? (
@@ -1224,20 +1196,8 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
         </div>
       ) : null}
 
-      <div className={styles.summaryBar}>
-        <span>{visibleTasks.length} visible tasks</span>
-        <span>{visibleGroups.length} active groups</span>
-        <span>{overdueCount} overdue items</span>
-        <span>{board.members.length} collaborators</span>
-        <span className={styles.dragHint}>Drag rows to reorder or move tasks between groups</span>
-        <button type="button" className={styles.secondaryButton} onClick={toggleVisibleSelection}>
-          {visibleTaskIds.length > 0 && visibleTaskIds.every((taskId) => selectedTaskIds.includes(taskId))
-            ? 'Unselect visible'
-            : 'Select visible'}
-        </button>
-      </div>
-
       {viewMode === 'table' ? (
+        <>
         <div id="list-of-tasks" className={styles.groupList}>
           {board.groups.length === 0 ? (
             <div className={styles.emptyState}>
@@ -1246,12 +1206,15 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
             </div>
           ) : (
             visibleGroups.map((group) => {
-              const isCollapsed = collapsedGroups[group.id];
+              const currentBoard = board;
+              if (!currentBoard) return null;
+
               const progressAverage =
                 group.tasks.length === 0 ? 0 : group.tasks.reduce((sum, task) => sum + task.progress, 0) / group.tasks.length;
-              const groupIndex = board.groups.findIndex((item) => item.id === group.id);
+              const groupIndex = currentBoard.groups.findIndex((item) => item.id === group.id);
               const isFirstGroup = groupIndex === 0;
-              const isLastGroup = groupIndex === board.groups.length - 1;
+              const isLastGroup = groupIndex === currentBoard.groups.length - 1;
+              const activeTasks = group.tasks.filter((task) => task.status !== 'done');
 
               return (
                 <article
@@ -1279,14 +1242,11 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
                         onChange={() => toggleGroupSelection(group)}
                         aria-label={`Select all tasks in ${group.name}`}
                       />
-                      <button
-                        type="button"
-                        className={styles.collapseButton}
-                        onClick={() => toggleGroup(group.id)}
-                      >
-                        {isCollapsed ? '+' : '-'}
-                      </button>
-                      <span className={styles.groupColor} style={{ background: group.color }} />
+                      <span
+                        className={styles.groupColor}
+                        style={{ background: LIST_OF_TASKS_SEGMENT_COLOR }}
+                        aria-hidden
+                      />
                       <div>
                         <EditableTextField
                           className={styles.groupTitleInput}
@@ -1335,207 +1295,63 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
                     </div>
                   </div>
 
-                  {!isCollapsed ? (
-                    <div className={styles.tableWrap}>
-                      <table className={styles.table}>
-                        <thead>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      {taskTableHead}
+                      <tbody>
+                        {activeTasks.length === 0 ? (
                           <tr>
-                            <th className={styles.checkboxColumn}>Pick</th>
-                            <th className={styles.dragColumn}>Move</th>
-                            <th>Item</th>
-                            <th>Status</th>
-                            <th>Owner</th>
-                            <th>Due date</th>
-                            <th>Priority</th>
-                            <th>Progress</th>
-                            <th>Notes</th>
-                            <th>Delete</th>
+                            <td colSpan={10} className={styles.emptyActiveTasks}>
+                              {group.tasks.length === 0
+                                ? 'No items in this segment yet.'
+                                : 'No active tasks — completed items are listed under Done tasks below.'}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {group.tasks.map((task) => {
-                            const member = getMember(board, task.assigneeId);
-
-                            return (
-                              <tr
-                                key={task.id}
-                                className={`${styles.taskRow} ${
-                                  dragState?.taskId === task.id ? styles.taskRowDragging : ''
-                                } ${
-                                  tableDropTarget?.groupId === group.id && tableDropTarget.taskId === task.id
-                                    ? styles.taskRowDropActive
-                                    : ''
-                                }`}
-                                onDragOver={(event) => {
-                                  event.preventDefault();
-                                  setTableDropTarget({ groupId: group.id, taskId: task.id });
-                                }}
-                                onDrop={(event) => {
-                                  event.preventDefault();
-                                  handleTableDrop(group.id, task.id);
-                                }}
-                              >
-                                <td>
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedTaskIds.includes(task.id)}
-                                    onChange={() => toggleTaskSelection(task.id)}
-                                    aria-label={`Select ${task.name}`}
-                                  />
-                                </td>
-                                <td>
-                                  <div
-                                    draggable
-                                    className={styles.dragHandle}
-                                    onDragStart={() =>
-                                      setDragState({
-                                        taskId: task.id,
-                                        sourceGroupId: group.id,
-                                        sourceStatus: task.status,
-                                        mode: 'table',
-                                      })
-                                    }
-                                    onDragEnd={clearDragState}
-                                    role="presentation"
-                                  >
-                                    ⋮⋮
-                                  </div>
-                                </td>
-                                <td>
-                                  <div className={styles.itemCell}>
-                                    <EditableTextField
-                                      className={styles.itemTextarea}
-                                      value={task.name}
-                                      onConfirm={(nextValue) => handleTaskChange(task.id, { name: nextValue })}
-                                      onDoubleClick={() => setDetailTaskId(task.id)}
-                                      ariaLabel={`Task item ${task.name}`}
-                                      multiline
-                                      charsPerRow={30}
-                                    />
-                                    <button
-                                      type="button"
-                                      className={styles.inlineLinkButton}
-                                      onClick={() => setDetailTaskId(task.id)}
-                                    >
-                                      Open full info
-                                    </button>
-                                  </div>
-                                </td>
-                                <td>
-                                  <select
-                                    className={`${styles.inlineSelect} ${statusClassNames[task.status]}`}
-                                    value={task.status}
-                                    onChange={(event) =>
-                                      handleTaskChange(task.id, {
-                                        status: event.target.value as TaskStatus,
-                                      })
-                                    }
-                                  >
-                                    {statusOrder.map((status) => (
-                                      <option key={status} value={status}>
-                                        {statusLabels[status]}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td>
-                                  <div className={styles.personCell}>
-                                    <span
-                                      className={styles.avatar}
-                                      style={{ background: member?.color ?? '#d0d7f2' }}
-                                    >
-                                      {member?.initials ?? '--'}
-                                    </span>
-                                    <select
-                                      className={styles.inlineSelect}
-                                      value={task.assigneeId}
-                                      onChange={(event) =>
-                                        handleTaskChange(task.id, {
-                                          assigneeId: event.target.value,
-                                        })
-                                      }
-                                    >
-                                      <option value="">Unassigned</option>
-                                      {board.members.map((person) => (
-                                        <option key={person.id} value={person.id}>
-                                          {person.name}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                </td>
-                                <td>
-                                  <input
-                                    className={styles.inlineDate}
-                                    type="date"
-                                    value={task.dueDate}
-                                    onChange={(event) =>
-                                      handleTaskChange(task.id, { dueDate: event.target.value })
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <select
-                                    className={`${styles.inlineSelect} ${priorityClassNames[task.priority]}`}
-                                    value={task.priority}
-                                    onChange={(event) =>
-                                      handleTaskChange(task.id, {
-                                        priority: event.target.value as TaskPriority,
-                                      })
-                                    }
-                                  >
-                                    {priorityOrder.map((priority) => (
-                                      <option key={priority} value={priority}>
-                                        {priorityLabels[priority]}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td>
-                                  <div className={styles.progressCell}>
-                                    <input
-                                      type="range"
-                                      min="0"
-                                      max="100"
-                                      value={task.progress}
-                                      onChange={(event) =>
-                                        handleTaskChange(task.id, {
-                                          progress: Number(event.target.value),
-                                        })
-                                      }
-                                    />
-                                    <span>{task.progress}%</span>
-                                  </div>
-                                </td>
-                                <td>
-                                  <EditableTextField
-                                    className={styles.notesInput}
-                                    value={task.notes}
-                                    onConfirm={(nextValue) => handleTaskChange(task.id, { notes: nextValue })}
-                                    ariaLabel={`Task notes ${task.name}`}
-                                  />
-                                </td>
-                                <td>
-                                  <button
-                                    type="button"
-                                    className={styles.dangerButtonSmall}
-                                    onClick={() => handleDeleteTask(task.id)}
-                                  >
-                                    Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : null}
+                        ) : (
+                          activeTasks.map((task) => renderTaskTableRow(task, group, currentBoard))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </article>
               );
             })
           )}
         </div>
+        {visibleGroups.some((g) => g.tasks.some((t) => t.status === 'done')) ? (
+          <div id="done-tasks-list" className={styles.doneTasksRoot}>
+            {visibleGroups.map((group) => {
+              const currentBoardForDone = board;
+              if (!currentBoardForDone) return null;
+              const doneOnly = group.tasks.filter((t) => t.status === 'done');
+              if (doneOnly.length === 0) return null;
+
+              return (
+                <article
+                  key={`${group.id}-done`}
+                  className={`${styles.groupCard} ${styles.doneTasksCard}`}
+                >
+                  <div className={styles.doneTasksSegmentHeader}>
+                    <span className={styles.groupColor} style={{ background: group.color }} aria-hidden />
+                    <h3 className={styles.doneTasksSegmentTitle}>Done Tasks</h3>
+                    <span className={styles.doneTasksMeta}>
+                      {group.name} · {doneOnly.length} completed
+                    </span>
+                  </div>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table} aria-label={`Done tasks: ${group.name}`}>
+                      {taskTableHead}
+                      <tbody>
+                        {doneOnly.map((task) => renderTaskTableRow(task, group, currentBoardForDone))}
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+        </>
       ) : (
         <div className={styles.kanbanGrid}>
           {kanbanColumns.map((column) => (

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Next.js task workspace inspired by monday.com",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start"
   },

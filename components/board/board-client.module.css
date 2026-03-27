@@ -59,7 +59,7 @@
 .boardSurface {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 
 .boardHeader,
@@ -239,6 +239,147 @@
 
 .headerHighlights {
   margin-top: 18px;
+}
+
+/* Tighter board chrome so task tables stay the visual focus */
+.boardHeaderCompact {
+  grid-template-columns: minmax(0, 1fr) minmax(200px, auto);
+  gap: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  align-items: start;
+}
+
+.boardHeaderCompact .heroEyebrow {
+  margin: 0 0 4px;
+  font-size: 0.65rem;
+}
+
+.boardHeaderCompact .heroTitle,
+.boardHeaderCompact .heroTitleInput {
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+}
+
+.boardHeaderCompact .heroTitleInput {
+  padding: 2px 6px;
+  margin: 0 -6px;
+}
+
+.boardHeaderCompact .heroDescription {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.boardHeaderCompact .heroDescriptionInput {
+  min-height: 40px;
+  max-width: 100%;
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.boardHeaderCompact .headerHighlights {
+  margin-top: 8px;
+  gap: 6px;
+}
+
+.boardHeaderCompact .inlineBadge {
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 0.68rem;
+}
+
+.boardHeaderCompact .headerActions {
+  gap: 6px;
+}
+
+.boardHeaderCompact .secondaryButton,
+.boardHeaderCompact .primaryCta {
+  padding: 7px 12px;
+  font-size: 0.76rem;
+}
+
+.analyticsGridCompact {
+  gap: 10px;
+}
+
+.teamRosterCompact {
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+
+.teamRosterCompact:hover {
+  transform: scale(1.005);
+  box-shadow: 0 12px 28px rgba(30, 58, 90, 0.12);
+}
+
+.teamRosterCompact .insightCardHead {
+  gap: 10px;
+  align-items: center;
+}
+
+.teamRosterCompact .metricLabel {
+  font-size: 0.65rem;
+}
+
+.teamRosterCompact .insightTitle {
+  font-size: 0.95rem;
+}
+
+.teamRosterCompact .secondaryButton {
+  padding: 6px 11px;
+  font-size: 0.72rem;
+}
+
+.teamRosterCompact .memberRosterTable {
+  min-width: 400px;
+}
+
+.teamRosterCompact .memberRosterTable th,
+.teamRosterCompact .memberRosterTable td {
+  padding: 6px 10px;
+}
+
+.teamRosterCompact .memberRosterTable th {
+  font-size: 0.65rem;
+}
+
+.teamRosterCompact .memberRosterNameCell {
+  gap: 8px;
+  min-width: 140px;
+}
+
+.teamRosterCompact .avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 0.62rem;
+}
+
+.teamRosterCompact .memberNameInput {
+  min-width: 100px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  font-size: 0.85rem;
+}
+
+.teamRosterCompact .memberInitialsTag {
+  min-width: 36px;
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 0.72rem;
+}
+
+.teamRosterCompact .memberColorInput {
+  width: 32px;
+  height: 28px;
+}
+
+.teamRosterCompact .ghostButton {
+  padding: 5px 10px;
+  font-size: 0.72rem;
 }
 
 .inlineBadge {
@@ -869,6 +1010,50 @@
 
 .tableWrap {
   overflow-x: auto;
+}
+
+.doneTasksRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.doneTasksCard {
+  border-style: dashed;
+  border-color: rgb(var(--brand-rgb) / 0.22);
+}
+
+.doneTasksSegmentHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgb(var(--brand-rgb) / 0.04);
+}
+
+.doneTasksSegmentTitle {
+  margin: 0;
+  flex: 1;
+  min-width: 120px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.doneTasksMeta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.emptyActiveTasks {
+  padding: 20px 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 .table {
