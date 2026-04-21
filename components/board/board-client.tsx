@@ -947,7 +947,7 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
     );
   }
 
-  if (boardLoading) {
+  if (boardLoading || (board != null && board.id !== boardId)) {
     return (
       <section className={styles.boardSurface}>
         <div className={styles.emptyState}>
