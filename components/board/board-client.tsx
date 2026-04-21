@@ -794,7 +794,6 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
         <th>Owner</th>
         <th>Due date</th>
         <th>Priority</th>
-        <th>Progress</th>
         <th>Notes</th>
         <th>Delete</th>
       </tr>
@@ -931,26 +930,11 @@ export function BoardClient({ initialBoard, boardId }: BoardClientProps) {
           </select>
         </td>
         <td>
-          <div className={styles.progressCell}>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={task.progress}
-              onChange={(event) =>
-                handleTaskChange(task.id, {
-                  progress: Number(event.target.value),
-                })
-              }
-            />
-            <span>{task.progress}%</span>
-          </div>
-        </td>
-        <td>
           <EditableTextField
             className={styles.notesInput}
             value={task.notes}
             onConfirm={(nextValue) => handleTaskChange(task.id, { notes: nextValue })}
+            onDoubleClick={() => setDetailTaskId(task.id)}
             ariaLabel={`Task notes ${task.name}`}
           />
         </td>

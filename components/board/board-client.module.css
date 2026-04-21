@@ -869,7 +869,7 @@
 .notesInput {
   border: 1px solid var(--border-soft);
   border-radius: 14px;
-  background: #fff;
+  background: rgb(var(--panel-rgb) / 0.95);
   color: var(--text-primary);
 }
 
@@ -1060,7 +1060,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 940px;
+  min-width: 780px;
 }
 
 .table th,
@@ -1170,17 +1170,6 @@
 .inlineDate {
   min-height: 40px;
   padding: 0 12px;
-}
-
-.progressCell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 160px;
-}
-
-.progressCell input {
-  width: 100%;
 }
 
 .avatar {
