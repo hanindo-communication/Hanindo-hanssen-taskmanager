@@ -23,6 +23,13 @@ const STORAGE_KEY = 'task-manager.member-bm-ba-details';
 const BM_BA_TABLE = 'workspace_bm_ba_settings';
 const BM_BA_ROW_ID = 'default';
 
+function isUnsettledBmBaPayload(raw: unknown): boolean {
+  if (raw === null || raw === undefined) return true;
+  if (Array.isArray(raw)) return true;
+  if (typeof raw !== 'object') return true;
+  return Object.keys(raw as Record<string, unknown>).length === 0;
+}
+
 function randomId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -96,7 +103,13 @@ export async function loadMemberBmBa(): Promise<MemberBmBaState> {
       .select('payload')
       .eq('id', BM_BA_ROW_ID)
       .maybeSingle();
-    if (error || !data?.payload) return loadMemberBmBaFromStorage();
+    if (
+      error ||
+      !data ||
+      isUnsettledBmBaPayload(data.payload)
+    ) {
+      return loadMemberBmBaFromStorage();
+    }
     const merged = mergeParsedIntoDefault(data.payload as unknown);
     saveMemberBmBaToStorage(merged);
     return merged;

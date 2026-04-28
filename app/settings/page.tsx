@@ -23,7 +23,7 @@ export default function SettingsPage() {
         <section id="role-per-member" className={styles.settingsSection}>
           <h2 className={styles.sectionTitle}>Role per member</h2>
           <p className={styles.sectionDescription}>
-            BM and BA profiles: job description and client lists are stored in this browser.
+            BM and BA profiles sync to Supabase when configured (same data on localhost and Vercel); this browser also keeps a local cache.
             Only workspace admins can edit these fields.
           </p>
 
